@@ -1,0 +1,382 @@
+package org.firstinspires.ftc.teamcode.OpMode;
+
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.PinpointDrive;
+import org.firstinspires.ftc.teamcode.recunoastere.Limelight;
+import org.firstinspires.ftc.teamcode.systems.Inaltime;
+import org.firstinspires.ftc.teamcode.systems.RampSensors;
+import org.firstinspires.ftc.teamcode.systems.Intake;
+import org.firstinspires.ftc.teamcode.systems.Ruleta;
+import org.firstinspires.ftc.teamcode.systems.Shooter;
+import org.firstinspires.ftc.teamcode.systems.Tureta;
+
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp_V2")
+public class Teleop_v2 extends LinearOpMode {
+
+    private enum State { INTAKE, SCORE }
+    private Servo led;
+
+    private static final Ruleta.Plan3 SCORE_PLAN = Ruleta.Plan3.PPP;
+
+    private static final double TOGGLE_THRESHOLD = 0.6;
+    private static final double SHOOT_THRESHOLD  = 0.6;
+
+    private static final long KICK_PUSH_MS = 140;
+    private static final long KICK_RETRACT_MS = 140;
+
+    private Limelight3A limelight;
+
+    int slotCurent = 0;
+
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+        SecondaryThread thread2Class =
+                new SecondaryThread(telemetry, hardwareMap);
+        Thread thread2 =
+                new Thread(thread2Class);
+
+        PhotonCore photonCore = new PhotonCore();
+        PhotonCore.ExperimentalParameters ph = new PhotonCore.ExperimentalParameters();
+        ph.setMaximumParallelCommands(8);
+        ph.setSinglethreadedOptimized(false);
+
+        if (thread2.isAlive()) {
+            thread2Class.stopThread();
+            thread2.interrupt();
+            thread2.join();
+        }
+
+
+        boolean lastDpadDown = false;
+
+
+        led = hardwareMap.get(Servo.class, "led");
+
+        Ruleta ruleta = new Ruleta(hardwareMap);
+        Tureta tureta =  new Tureta(hardwareMap);
+
+        Intake intake = new Intake(hardwareMap);
+        intake.setRuleta(ruleta);
+
+        Inaltime inaltime = new Inaltime(hardwareMap);
+        Shooter shooter = new Shooter(hardwareMap);
+        RampSensors sensors = new RampSensors(hardwareMap);
+
+        Edge squareEdge = new Edge();
+        Edge circleEdge = new Edge();
+
+
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(1);
+        limelight.start();
+
+        State state = State.INTAKE;
+
+        boolean intakeForwardOn = false;
+        boolean intakeReverseOn = false;
+        boolean rpm_apropiere = false;
+        boolean goscorare = false;
+
+        Edge rtEdge = new Edge();
+        Edge ltEdge = new Edge();
+        Edge ballEdge = new Edge();
+        Edge shootEdge = new Edge();
+
+        Ruleta.Slot currentScoreSlot = null;
+        Ruleta.Slot currentCollectSlot = Ruleta.Slot.C1;
+        int shotsDone = 0;
+
+        // INIT
+        shooter.stopAll();
+        intake.resetForIntake();
+        shooter.safeForRuletaRotate();
+        ruleta.goTo(Ruleta.Slot.C1);
+        tureta.goDefault();
+
+        waitForStart();
+        thread2.start();
+        while(opModeInInit()){
+            LLResult result = limelight.getLatestResult();
+
+            String tagId = Limelight.getAprilTagId(result);
+        }
+
+        while (opModeIsActive()) {
+
+            if (gamepad1.right_trigger != 0) intake.start();
+            else if (gamepad1.left_trigger !=0) intake.reverse();
+            else intake.stop();
+
+            switch (state) {
+
+                case INTAKE: {
+
+
+                    shooter.safeForRuletaRotate();
+
+                    boolean rtPressed = gamepad1.right_trigger > TOGGLE_THRESHOLD;
+                    boolean ltPressed = gamepad1.left_trigger > TOGGLE_THRESHOLD;
+
+                    boolean squarePressed = gamepad1.square;
+
+                    boolean ballNow = gamepad1.square;
+                    if (ballEdge.rising(ballNow)) {
+                        boolean isGreen = !sensors.isPurple();
+                        intake.onBallEntered(isGreen);
+
+                        shooter.safeForRuletaRotate();
+                        sleep(200);
+                        slotCurent++;
+                        if (slotCurent >= Ruleta.SLOTURI_COLECTARE.length) slotCurent = 0;
+                        ruleta.setPoz(Ruleta.SLOTURI_COLECTARE[slotCurent]);
+//                        Ruleta.Slot next = ruleta.firstFreeCollectSlot();
+
+//                        if (next != null) {
+//                            ruleta.goTo(next);
+//                        } else {
+//                            ruleta.goTo(next);
+//                        }
+                    }
+
+                    if(circleEdge.rising(gamepad1.circle)){
+                        goscorare = true;
+                    }
+//                    if(gamepad1.dpad_left){
+//                        Ruleta.Slot nextCollect = nextCollectSlot(currentCollectSlot);
+//                        shooter.safeForRuletaRotate();
+//                        sleep(200);
+//                        ruleta.goTo(nextCollect);
+//                        currentCollectSlot = nextCollect;
+//                    }
+
+
+
+                    if (goscorare) {
+                        goscorare = false;
+                        ruleta.setPlan(SCORE_PLAN);
+
+                        ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
+                        ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
+                        ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
+
+                        shotsDone = 0;
+                        currentScoreSlot = null;
+
+                        shooter.retractKicker();
+                        shooter.spinUp();
+                        sleep(250);
+
+                        shootEdge.reset(false);
+                        state = State.SCORE;
+                    }
+
+                    telemetry.addData("STATE", "INTAKE");
+                    telemetry.addData("Balls", intake.getBallsIntaked());
+                    telemetry.addData("Ruleta", ruleta.debug());
+                    telemetry.update();
+                    break;
+                }
+
+                case SCORE: {
+//                   // boolean squarePressed = gamepad1.square;
+//                    //if (squareEdge.rising(squarePressed)) {
+//                        currentCollectSlot = nextCollectSlot(currentCollectSlot);
+//                        shooter.safeForRuletaRotate();
+//                        sleep(200);
+//                        ruleta.goTo(currentCollectSlot);
+//
+//                    }
+                    boolean dpadDown = gamepad1.dpad_down;
+                    if(circleEdge.rising(gamepad1.dpad_left)){
+                        resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
+                        goscorare = false;
+                        state = State.INTAKE;
+                        circleEdge.reset(false);
+                        break;
+                    }
+
+                    if (dpadDown && !lastDpadDown) {
+                        shooter.toggleRPM();
+                    }
+
+                    lastDpadDown = dpadDown;
+
+                    if(shooter.atSpeed()) {
+                        led.setPosition(1);
+
+                    }else{
+                        led.setPosition(0);
+                    }
+                    shooter.spinUp();
+
+                    if (currentScoreSlot == null) {
+                        currentScoreSlot = pickNextScoreSlot(ruleta);
+                        if (currentScoreSlot == null) {
+                            resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
+                            state = State.INTAKE;
+                            break;
+                        }
+                    }
+                    shooter.safeForRuletaRotate();
+                    ruleta.goTo(currentScoreSlot);
+
+                    sleep(200);
+                    boolean shootPressed = gamepad1.cross;
+                    if (shootEdge.rising(shootPressed) && shooter.atSpeed()) {
+
+                        shooter.pushKicker();
+                        sleep(200);
+
+                        shooter.retractKicker();
+                        sleep(200);
+
+                        shooter.pushKicker();
+                        sleep(200);
+
+                        shooter.retractKicker();
+                        sleep(200);
+
+                        ruleta.popScoredBall(currentScoreSlot);
+                        shotsDone++;
+
+                        currentScoreSlot = pickNextScoreSlot(ruleta);
+
+                        if (shotsDone >= 3 || currentScoreSlot == null) {
+                            resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
+                            state = State.INTAKE;
+                            goscorare = false;
+                        }
+                    }
+
+
+
+                    telemetry.addData("STATE", "SCORE");
+                    telemetry.addData("Vel", shooter.getVelocity());
+                    telemetry.addData("AtSpeed", shooter.atSpeed());
+                    telemetry.addData("TargetSlot", currentScoreSlot);
+                    telemetry.addData("ShotsDone", shotsDone);
+                    telemetry.addData("Ruleta", ruleta.debug());
+                    telemetry.addData("Target RPM", shooter.showRpm());
+                    telemetry.update();
+                    break;
+                }
+            }
+        }
+
+        shooter.stopAll();
+    }
+
+    private Ruleta.Slot nextCollectSlot(Ruleta.Slot s) {
+        if (s == Ruleta.Slot.C1) return Ruleta.Slot.C2;
+        if (s == Ruleta.Slot.C2) return Ruleta.Slot.C3;
+        return Ruleta.Slot.C1;
+    }
+    public Ruleta.Slot nextScoreSlot(Ruleta.Slot s) {
+        if (s == Ruleta.Slot.S1) return Ruleta.Slot.S2;
+        if (s == Ruleta.Slot.S2) return Ruleta.Slot.S3;
+        return Ruleta.Slot.S1;
+    }
+
+    private static Ruleta.Slot pickNextScoreSlot(Ruleta r) {
+        Ruleta.Slot s = r.nextScoreSlotFromPlan();
+        if (s != null) return s;
+        if (!r.isEmpty(Ruleta.Slot.S1)) return Ruleta.Slot.S1;
+        if (!r.isEmpty(Ruleta.Slot.S2)) return Ruleta.Slot.S2;
+        if (!r.isEmpty(Ruleta.Slot.S3)) return Ruleta.Slot.S3;
+        return null;
+    }
+
+    private static void resetToIntake(
+            Shooter shooter,
+            Intake intake,
+            Ruleta ruleta,
+            Edge rt, Edge lt, Edge ball, Edge shoot
+    ) {
+        shooter.stopAll();
+        intake.resetForIntake();
+        shooter.safeForRuletaRotate();
+        ruleta.goTo(Ruleta.Slot.C1);
+
+        rt.reset(false);
+        lt.reset(false);
+        ball.reset(false);
+        shoot.reset(false);
+    }
+
+    public static final class Edge {
+        private boolean prev = false;
+
+        public boolean rising(boolean now) {
+            boolean r = now && !prev;
+            prev = now;
+            return r;
+        }
+
+        void reset(boolean value) {
+            prev = value;
+        }
+    }
+
+    class SecondaryThread implements Runnable {
+        Telemetry telemetry;
+        HardwareMap hm;
+        volatile boolean isRunning = true;
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
+
+
+        public SecondaryThread(Telemetry telemetry, HardwareMap hm) {
+            this.telemetry = telemetry;
+            this.hm = hm;
+        }
+
+        @Override
+        public void run( ) {
+            while (!Thread.currentThread().isInterrupted()) {
+
+                if(isRunning) {
+                    drive.setDrivePowers(new PoseVelocity2d(
+                            new Vector2d(
+                                    -gamepad1.left_stick_y,
+                                    -gamepad1.left_stick_x
+                            ),
+                            -gamepad1.right_stick_x
+                    ));
+
+
+                }
+
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        public void stopThread( ) {
+            isRunning = false;
+        }
+
+        public void continueThread( ) {
+            isRunning = true;
+        }
+
+
+
+    }
+
+}
+
+
