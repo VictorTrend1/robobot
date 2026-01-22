@@ -114,5 +114,6 @@ public class trajectory_Interpolation {
     private static double clamp(double x, double lo, double hi) {
         return Math.max(lo, Math.min(hi, x));
     }
+    public static double distanceToTarget(double x, double y) {return Math.hypot(x, y);}
 }
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autos;
+package org.firstinspires.ftc.teamcode.temp_auto;
 
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
@@ -98,6 +98,7 @@ public class auto_blue_close extends LinearOpMode {
                         .strafeToLinearHeading(new Vector2d(-1, -22), Math.toRadians(-52), vel , acc)
                         .build());
         sleep(10000);
+
 
     }
 

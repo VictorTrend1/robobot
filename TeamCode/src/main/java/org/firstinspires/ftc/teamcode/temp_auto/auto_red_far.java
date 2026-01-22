@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autos;
+package org.firstinspires.ftc.teamcode.temp_auto;
 
 import static org.firstinspires.ftc.teamcode.recunoastere.Limelight.getAprilTagId;
 
@@ -17,9 +17,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.OpMode.Teleop;
-import org.firstinspires.ftc.teamcode.OpMode.Teleop_v2;
+import org.firstinspires.ftc.teamcode.temp.Teleop_v2;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
-import org.firstinspires.ftc.teamcode.recunoastere.Limelight;
 import org.firstinspires.ftc.teamcode.systems.Inaltime;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.RampSensors;

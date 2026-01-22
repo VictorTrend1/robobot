@@ -22,28 +22,17 @@ public class Limelight extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-
-        // Pipeline-ul pentru AprilTag
         limelight.pipelineSwitch(1);
-
         waitForStart();
 
         limelight.start();
         while(opModeInInit()) {
         }
-
         while (opModeIsActive()) {
-
             LLResult result = limelight.getLatestResult();
-
             String tagId = getAprilTagId(result);
-
             telemetry.addData("AprilTag ID", tagId);
             telemetry.update();
-
-
-
-
         }
     }
 

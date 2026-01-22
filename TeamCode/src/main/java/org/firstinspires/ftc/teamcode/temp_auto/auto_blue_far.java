@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autos;
+package org.firstinspires.ftc.teamcode.temp_auto;
 
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
@@ -24,8 +24,8 @@ import org.firstinspires.ftc.teamcode.systems.Tureta;
 import java.util.Arrays;
 
 
-@Autonomous(name = "auto_red_close")
-public class auto_red_close extends LinearOpMode {
+@Autonomous(name = "auto_blue_far")
+public class auto_blue_far extends LinearOpMode {
 
 
     @Override
@@ -48,7 +48,6 @@ public class auto_red_close extends LinearOpMode {
 
         Shooter shooter = new Shooter(hardwareMap);
         RampSensors sensors = new RampSensors(hardwareMap);
-
         Inaltime inaltime = new Inaltime(hardwareMap);
 
 
@@ -63,26 +62,26 @@ public class auto_red_close extends LinearOpMode {
                 drive.actionBuilder(start)
                         .afterTime(0, ()->{
                             tureta.goDefault();
-                            shooter.spinUpTo(1500);
+                            shooter.spinUpTo(1700);
                         })
-                        .strafeToLinearHeading(new Vector2d(-63,-12), Math.toRadians(3), vel, acc)
+                        .strafeToLinearHeading(new Vector2d(10,0), Math.toRadians(52), vel, acc)
                         .afterTime(0.1, ()->{ new Thread(()->{
 
-                            while (!shooter.atSpeedTo(1300)){}
+                            while (!shooter.atSpeedTo(1650)){}
                             ruleta.goTo(Ruleta.Slot.S1);
 
                             kick_ball(shooter);
-                            sleep(300);
+                            sleep(450);
 
                             ruleta.goTo(Ruleta.Slot.S2);
-                            while (!shooter.atSpeedTo(1300)){}
+                            while (!shooter.atSpeedTo(1650)){}
 
                             sleep(300);
                             kick_ball(shooter);
                             sleep(300);
 
                             ruleta.goTo(Ruleta.Slot.S3);
-                            while (!shooter.atSpeedTo(1300)){}
+                            while (!shooter.atSpeedTo(1650)){}
 
                             sleep(300);
                             kick_ball(shooter);
@@ -98,20 +97,13 @@ public class auto_red_close extends LinearOpMode {
                             shooter.stopFlywheel();
                             ruleta.goTo(Ruleta.Slot.C1);
                         }).start();})
-                        .strafeToLinearHeading(new Vector2d(-6, -24), Math.toRadians(51), vel , acc)
-                        .build());
+                        .strafeToConstantHeading(new Vector2d(24.7,35) )
 
-        Actions.runBlocking(
-                drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
-                        .afterTime(0, ()->{ new Thread(()->{
-                            tureta.goDefault();
-                            shooter.stopFlywheel();
-                            ruleta.goTo(Ruleta.Slot.C1);
-                        }).start();})
-                        .strafeToLinearHeading(new Vector2d(-1, -24), Math.toRadians(51), vel , acc)
+
+
+
                         .build());
         sleep(10000);
-
     }
 
     private void kick_ball(Shooter shooter) {

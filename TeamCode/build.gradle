@@ -39,4 +39,5 @@ dependencies {
     implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
     implementation "page.j5155.roadrunner:ftc-otos:0.1.2+0.1.14"
     implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.0-ALPHA'
+    implementation 'com.google.android.appcrawler:appcrawler-platform:0.0.1-alpha03'
 }

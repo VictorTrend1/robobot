@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.OpMode;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Inaltime;
 import org.firstinspires.ftc.teamcode.systems.RampSensors;
 import org.firstinspires.ftc.teamcode.systems.Intake;
@@ -17,7 +12,7 @@ import org.firstinspires.ftc.teamcode.systems.Ruleta;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 import org.firstinspires.ftc.teamcode.systems.Tureta;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp")
+@TeleOp(name = "TeleOp")
 public class Teleop extends LinearOpMode {
 
     private enum State { INTAKE, SCORE }
@@ -25,20 +20,12 @@ public class Teleop extends LinearOpMode {
 
     private static final Ruleta.Plan3 SCORE_PLAN = Ruleta.Plan3.PPP;
 
-    private static final double TOGGLE_THRESHOLD = 0.6;
-    private static final double SHOOT_THRESHOLD  = 0.6;
-
-    private static final long KICK_PUSH_MS = 140;
-    private static final long KICK_RETRACT_MS = 140;
-
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-        SecondaryThread thread2Class =
-                new SecondaryThread(telemetry, hardwareMap);
-        Thread thread2 =
-                new Thread(thread2Class);
+        drivetrainThread thread2Class = new drivetrainThread(telemetry, hardwareMap);
+        Thread thread2 = new Thread(thread2Class);
 
         PhotonCore photonCore = new PhotonCore();
         PhotonCore.ExperimentalParameters ph = new PhotonCore.ExperimentalParameters();
@@ -46,14 +33,12 @@ public class Teleop extends LinearOpMode {
         ph.setSinglethreadedOptimized(false);
 
         if (thread2.isAlive()) {
-            thread2Class.stopThread();
             thread2.interrupt();
             thread2.join();
         }
 
 
         boolean lastDpadDown = false;
-
 
         led = hardwareMap.get(Servo.class, "led");
 
@@ -91,7 +76,6 @@ public class Teleop extends LinearOpMode {
         intake.resetForIntake();
         shooter.safeForRuletaRotate();
         ruleta.goTo(Ruleta.Slot.C1);
-        tureta.goDefault();
 
         waitForStart();
         thread2.start();
@@ -107,13 +91,7 @@ public class Teleop extends LinearOpMode {
 
                 case INTAKE: {
 
-
                     shooter.safeForRuletaRotate();
-
-                    boolean rtPressed = gamepad1.right_trigger > TOGGLE_THRESHOLD;
-                    boolean ltPressed = gamepad1.left_trigger > TOGGLE_THRESHOLD;
-
-                    boolean squarePressed = gamepad1.square;
 
                     boolean ballNow = gamepad1.square;
                     if (ballEdge.rising(ballNow)) {
@@ -154,15 +132,11 @@ public class Teleop extends LinearOpMode {
 
                     telemetry.addData("STATE", "INTAKE");
                     telemetry.addData("Balls", intake.getBallsIntaked());
-                    telemetry.addData("Ruleta", ruleta.debug());
                     telemetry.update();
                     break;
                 }
 
                 case SCORE: {
-
-
-
 
                     boolean dpadDown = gamepad1.dpad_down;
 
@@ -188,25 +162,20 @@ public class Teleop extends LinearOpMode {
                             break;
                         }
                     }
-                    /// NAZI
                     shooter.safeForRuletaRotate();
                     ruleta.goTo(currentScoreSlot);
 
                     sleep(200);
                     boolean shootPressed = gamepad1.cross;
                     if (shootEdge.rising(shootPressed) && shooter.atSpeed()) {
+                        for (int i=0; i<=1; i++){
+                            shooter.pushKicker();
+                            sleep(200);
+                            shooter.retractKicker();
+                            sleep(200);
+                        }
 
-                        shooter.pushKicker();
-                        sleep(200);
 
-                        shooter.retractKicker();
-                        sleep(200);
-
-                        shooter.pushKicker();
-                        sleep(200);
-
-                        shooter.retractKicker();
-                        sleep(200);
 
                         ruleta.popScoredBall(currentScoreSlot);
                         shotsDone++;
@@ -218,7 +187,6 @@ public class Teleop extends LinearOpMode {
                             state = State.INTAKE;
                         }
                     }
-
 
 
                     telemetry.addData("STATE", "SCORE");
@@ -286,54 +254,6 @@ public class Teleop extends LinearOpMode {
         void reset(boolean value) {
             prev = value;
         }
-    }
-
-    class SecondaryThread implements Runnable {
-        Telemetry telemetry;
-        HardwareMap hm;
-        volatile boolean isRunning = true;
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
-
-
-        public SecondaryThread(Telemetry telemetry, HardwareMap hm) {
-            this.telemetry = telemetry;
-            this.hm = hm;
-        }
-
-        @Override
-        public void run( ) {
-            while (!Thread.currentThread().isInterrupted()) {
-
-                if(isRunning) {
-                    drive.setDrivePowers(new PoseVelocity2d(
-                            new Vector2d(
-                                    -gamepad1.left_stick_y,
-                                    -gamepad1.left_stick_x
-                            ),
-                            -gamepad1.right_stick_x
-                    ));
-
-
-                }
-
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        }
-        public void stopThread( ) {
-            isRunning = false;
-        }
-
-        public void continueThread( ) {
-            isRunning = true;
-        }
-
-
-
     }
 
 }
