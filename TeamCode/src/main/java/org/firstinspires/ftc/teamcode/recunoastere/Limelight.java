@@ -58,7 +58,7 @@ public class Limelight extends LinearOpMode {
             int id = tag.getFiducialId();
 
             if (id == 21) {
-                return "GxPP";
+                return "GPP";
             }else if(id==22){
                 return "PGP";
             } else if (id==23) {
