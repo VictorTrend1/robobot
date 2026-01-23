@@ -64,27 +64,26 @@ public class MecanumDrive {
 
         // drive model parameters
         public double inPerTick = 1; // If you're using OTOS/Pinpoint leave this at 1 (all values will be in inches, 1 tick = 1 inch)
-        public double lateralInPerTick = 0.549895140029461; // Tune this with LateralRampLogger (even if you use OTOS/Pinpoint)
+        public double lateralInPerTick = 0.5516086645945706; // Tune this with LateralRampLogger (even if you use OTOS/Pinpoint)
         public double trackWidthTicks = 11.495733487353801;
 
         // feedforward parameters (in tick units)
-        public double kS = 1.30698302212208;
-            public double kV = 0.13623741273424456;
+        public double kS = 1.4222582066922502;  //1.30698302212208
+            public double kV = 0.12984600736671162; // 0.13623741273424456
         public double kA = 0.05;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 80;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 80;
+        public double maxWheelVel = 190;
+        public double minProfileAccel = -100;
+        public double maxProfileAccel = 170;
 
-        // turn profile parameters (in radians)
-        public double maxAngVel = Math.PI; // shared with path
-        public double maxAngAccel = Math.PI;
+        public double maxAngVel = 6 * Math.PI; // shared with path
+        public double maxAngAccel = 6 * Math.PI;
 
         // path controller gains
-        public double axialGain = 0;
-        public double lateralGain = 3;
-        public double headingGain = 8; // shared with turn
+        public double axialGain = 5;
+        public double lateralGain = 9; // 10
+        public double headingGain = 13; // shared with turn  // 10
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
@@ -290,7 +289,7 @@ public class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= timeTrajectory.duration-0.5) {
+            if (t >= timeTrajectory.duration + 1 ) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);
@@ -382,7 +381,7 @@ public class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= turn.duration) {
+            if (t >= turn.duration ) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);
