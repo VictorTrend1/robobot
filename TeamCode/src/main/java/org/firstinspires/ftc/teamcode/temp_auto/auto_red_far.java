@@ -49,7 +49,7 @@ public class auto_red_far extends LinearOpMode {
         Pose2d start = new Pose2d(0, 0, Math.toRadians(0));
         PinpointDrive drive = new PinpointDrive(hardwareMap, start);
 
-        Teleop.Edge ballEdge = new Teleop_v2.Edge();
+        Teleop.Edge ballEdge = new Teleop.Edge();
 
         Ruleta ruleta = new Ruleta(hardwareMap);
         Tureta tureta = new Tureta(hardwareMap);

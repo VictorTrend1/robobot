@@ -242,10 +242,10 @@ public class Teleop extends LinearOpMode {
         shoot.reset(false);
     }
 
-    private static final class Edge {
+    public static final class Edge {
         private boolean prev = false;
 
-        boolean rising(boolean now) {
+        public boolean rising(boolean now) {
             boolean r = now && !prev;
             prev = now;
             return r;
