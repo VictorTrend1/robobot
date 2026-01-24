@@ -11,8 +11,8 @@ public class Shooter {
     private final DcMotorEx flywheel2;
     private final Servo kicker;
 
-    private  double TARGET_VEL = 1700;
-    private  double MIN_VEL = 1600;
+    private  double TARGET_VEL = 1600;
+    private  double MIN_VEL = 1500;
 
     private static final double KICK_PUSH = 0.3;
     private static final double KICK_RETRACT = 0.595;

@@ -79,6 +79,11 @@ public class teleop extends LinearOpMode {
         intake.resetForIntake();
         shooter.safeForRuletaRotate();
         ruleta.goTo(Ruleta.Slot.C1);
+        tureta.goDefault();
+
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
+
+
 
         waitForStart();
         thread2.start();
@@ -89,6 +94,8 @@ public class teleop extends LinearOpMode {
             if (gamepad1.right_trigger != 0) intake.start();
             else if (gamepad1.left_trigger !=0) intake.reverse();
             else intake.stop();
+            drive.updatePoseEstimate();
+
 
             switch (state) {
 
@@ -141,11 +148,18 @@ public class teleop extends LinearOpMode {
 
                 case SCORE: {
 
-                    boolean dpadDown = gamepad1.dpad_down;
+                    if(Math.abs(drive.pose.position.x)>=55){
+                        shooter.spinUpTo(1400);
+                    }else                     shooter.spinUp();
 
+
+                    boolean dpadDown = gamepad1.dpad_down;
+                    /*
                     if (dpadDown && !lastDpadDown) {
                         shooter.toggleRPM();
                     }
+
+                     */
 
                     lastDpadDown = dpadDown;
 
@@ -155,7 +169,6 @@ public class teleop extends LinearOpMode {
                     }else{
                         led.setPosition(0);
                     }
-                    shooter.spinUp();
 
                     if (currentScoreSlot == null) {
                         currentScoreSlot = pickNextScoreSlot(ruleta);
@@ -170,7 +183,7 @@ public class teleop extends LinearOpMode {
 
                     sleep(200);
                     boolean shootPressed = gamepad1.cross;
-                    if (shootEdge.rising(shootPressed) && shooter.atSpeed()) {
+                    if (shootEdge.rising(shootPressed) ) {
                         for (int i=0; i<=1; i++){
                             shooter.pushKicker();
                             sleep(200);
@@ -198,6 +211,7 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("TargetSlot", currentScoreSlot);
                     telemetry.addData("ShotsDone", shotsDone);
                     telemetry.addData("Ruleta", ruleta.debug());
+                    telemetry.addData("X", drive.pose.position.x);
                     telemetry.update();
                     break;
                 }

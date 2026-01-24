@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.PinpointDrive;
+import org.firstinspires.ftc.teamcode.systems.Ruleta;
 
 import java.util.List;
 
@@ -30,31 +31,27 @@ public class Limelight extends LinearOpMode {
         }
         while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();
-            String tagId = getAprilTagId(result);
+            Ruleta.Plan3 tagId = getAprilTagId(result);
             telemetry.addData("AprilTag ID", tagId);
             telemetry.update();
         }
     }
 
-    public static String getAprilTagId(LLResult result) {
-
-        if (result == null || !result.isValid()) return "null";
-
+    public static Ruleta.Plan3 getAprilTagId(LLResult result) {
         List<LLResultTypes.FiducialResult> tags = result.getFiducialResults();
-        if (tags == null || tags.isEmpty()) return "null";
 
         for (LLResultTypes.FiducialResult tag : tags) {
             int id = tag.getFiducialId();
 
             if (id == 21) {
-                return "GPP";
+                return Ruleta.Plan3.GPP;
             }else if(id==22){
-                return "PGP";
+                return Ruleta.Plan3.PGP;
             } else if (id==23) {
-                return "PPG";
+                return Ruleta.Plan3.PPG;
             }
         }
 
-        return "null";
+        return null;
     }
 }
