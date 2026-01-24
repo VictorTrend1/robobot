@@ -49,9 +49,9 @@ public class auto_red_far extends BaseAuto {
                 drive.actionBuilder(new Pose2d(0,0,0))
                         .afterTime(0, ()->{shooter.spinUpTo(1600);
                         ruleta.goTo(Ruleta.Slot.S1);
-                        tureta.setPosition(aim.turretDegreesToServo(-12));
+                        tureta.setPosition(aim.turretDegreesToServo(12));
                         })
-                        .strafeToLinearHeading(new Vector2d(9, -2), Math.toRadians(0))
+                        .strafeToLinearHeading(new Vector2d(9, 2), Math.toRadians(0))
                         .build()
         );
         shootOnPlan(plan);
@@ -63,20 +63,20 @@ public class auto_red_far extends BaseAuto {
                             shooter.stopFlywheel();
                             ruleta.goTo(Ruleta.Slot.C1);
                         })
-                        .strafeToLinearHeading(new Vector2d(26, -25), Math.toRadians(-90))
+                        .strafeToLinearHeading(new Vector2d(26, 25), Math.toRadians(90))
 
                         .build()
         );
         ruleta.goTo(Ruleta.Slot.C2);
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-                        .strafeToLinearHeading(new Vector2d(26, -39), Math.toRadians(-89))
+                        .strafeToLinearHeading(new Vector2d(26, 39), Math.toRadians(89))
                         .build()
         );
         ruleta.goTo(Ruleta.Slot.C3);
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-                        .strafeToLinearHeading(new Vector2d(30, -55), Math.toRadians(-89))
+                        .strafeToLinearHeading(new Vector2d(30, 55), Math.toRadians(89))
                         .build()
         );
         ruleta.goTo(Ruleta.Slot.S1);
@@ -84,7 +84,7 @@ public class auto_red_far extends BaseAuto {
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
                         .afterTime(0.1, ()->{shooter.spinUpTo(1600);
                         intake.stop();})
-                        .strafeToLinearHeading(new Vector2d(9, -2), Math.toRadians(0))
+                        .strafeToLinearHeading(new Vector2d(9, 2), Math.toRadians(0))
                         .build()
         );
         shootOnPlan(plan);
