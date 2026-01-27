@@ -51,18 +51,13 @@ public class teleop extends LinearOpMode {
         Intake intake = new Intake(hardwareMap);
         intake.setRuleta(ruleta);
 
-        Inaltime inaltime = new Inaltime(hardwareMap);
+
         Shooter shooter = new Shooter(hardwareMap);
         RampSensors sensors = new RampSensors(hardwareMap);
-
-        Edge squareEdge = new Edge();
         Edge circleEdge = new Edge();
 
         State state = State.INTAKE;
 
-        boolean intakeForwardOn = false;
-        boolean intakeReverseOn = false;
-        boolean rpm_apropiere = false;
         boolean goscorare = false;
 
         Edge rtEdge = new Edge();

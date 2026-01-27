@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Ruleta;
 
-@Autonomous(name = "auto_red_far")
-public class auto_red_far extends BaseAuto {
+@Autonomous(name = "auto")
+public class Auto extends BaseAuto {
 
     private PinpointDrive drive;
 
@@ -46,13 +46,14 @@ public class auto_red_far extends BaseAuto {
                             ruleta.goTo(Ruleta.Slot.S1);
                             tureta.setPosition(aim.turretDegreesToServo(-12));
                         })
-                        .strafeToLinearHeading(new Vector2d(9, -2), Math.toRadians(0))
+                        .setTangent(Math.toRadians(0))
+                        .splineToConstantHeading(new Vector2d(9, -2), Math.toRadians(90))
                         .build()
         );
         shootOnPlan(plan);
         shooter.stopFlywheel();
         //=============INTAKE================
-
+/*
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
                         .afterTime(0, ()->{intake.start();
@@ -84,6 +85,8 @@ public class auto_red_far extends BaseAuto {
                         .build()
         );
         shootOnPlan(plan);
+
+ */
 
         sleep(30000);
 

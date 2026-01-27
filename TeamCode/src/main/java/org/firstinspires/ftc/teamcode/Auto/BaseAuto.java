@@ -22,8 +22,6 @@ public abstract class BaseAuto extends LinearOpMode {
     Ruleta.Plan3 plan;
 
     protected int balls;
-
-
     protected int WAIT_MS = 200;
 
     @Override
@@ -35,7 +33,6 @@ public abstract class BaseAuto extends LinearOpMode {
         aim = new aim(tureta);
         sensors = new RampSensors(hardwareMap);
         balls=0;
-
 
         onInit();
 
@@ -53,9 +50,7 @@ public abstract class BaseAuto extends LinearOpMode {
     }
     protected abstract void onRun();
     protected final void waitShooterAtSpeed(double minOk) {
-        while (opModeIsActive() && !shooter.atSpeedTo(SHOOT_MIN_OK)) {
-
-        }
+        while (true) {if (!opModeIsActive() || shooter.atSpeedTo( SHOOT_MIN_OK )) break;}
     }
 
     protected final void shoot_3() {
