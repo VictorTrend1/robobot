@@ -11,8 +11,8 @@ public class Shooter {
     private final DcMotorEx flywheel2;
     private final Servo kicker;
 
-    private  double TARGET_VEL = 1600;
-    private  double MIN_VEL = 1500;
+    private  double TARGET_VEL = 1700;
+    private  double MIN_VEL = 1600;
 
     private static final double KICK_PUSH = 0.3;
     private static final double KICK_RETRACT = 0.595;
@@ -47,8 +47,8 @@ public class Shooter {
     public void safeForRuletaRotate() { retractKicker(); }
     public void toggleRPM() {
         if (TARGET_VEL == 1700) {
-            TARGET_VEL = 1500;
-            MIN_VEL = 1400;
+            TARGET_VEL = 1550;
+            MIN_VEL = 1450;
         } else {
             TARGET_VEL = 1600;
             MIN_VEL = 1500;

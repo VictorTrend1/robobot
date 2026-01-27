@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Ruleta;
 
-@Autonomous(name = "auto_red_close")
+@Autonomous(name = "auto_blue_close")
 public class auto_blue_close extends BaseAuto {
 
     private PinpointDrive drive;
@@ -39,9 +39,10 @@ public class auto_blue_close extends BaseAuto {
                 drive.actionBuilder(new Pose2d(0,0,0))
                         .afterTime(0, ()->{shooter.spinUpTo(1400);
                             ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(aim.turretDegreesToServo(27));
+//                            tureta.setPosition(aim.turretDegreesToServo(27));
+                            tureta.setPosition(0.5);
                         })
-                        .strafeToLinearHeading(new Vector2d(61, -9), Math.toRadians(132))
+                        .strafeToLinearHeading(new Vector2d(58, -5), Math.toRadians(126))
                         .build()
         );
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -59,10 +60,15 @@ public class auto_blue_close extends BaseAuto {
         telemetry.addData("plan", plan);
         telemetry.update();
         if(plan==null){plan= Ruleta.Plan3.PPG;}
-
-
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
+                        .strafeToLinearHeading(new Vector2d(47, -6), Math.toRadians(-176))
+                        .build());
         shootOnPlan(plan);
-        //=============INTAKE================
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
+                        .strafeToLinearHeading(new Vector2d(36, -6), Math.toRadians(-178))
+                        .build());
 
 
 

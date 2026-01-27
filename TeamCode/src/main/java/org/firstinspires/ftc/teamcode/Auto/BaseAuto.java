@@ -131,10 +131,6 @@ public abstract class BaseAuto extends LinearOpMode {
             sleep(200);
             shooter.retractKicker();
             sleep(100);
-            shooter.pushKicker();
-            sleep(200);
-            shooter.retractKicker();
-            sleep(200);
         }
     }
 

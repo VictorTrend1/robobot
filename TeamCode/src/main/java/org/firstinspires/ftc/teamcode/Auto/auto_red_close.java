@@ -41,7 +41,7 @@ public class auto_red_close extends BaseAuto {
                             ruleta.goTo(Ruleta.Slot.S1);
                             tureta.setPosition(aim.turretDegreesToServo(-27));
                         })
-                        .strafeToLinearHeading(new Vector2d(61, 9), Math.toRadians(-132))
+                        .strafeToLinearHeading(new Vector2d(61, 5), Math.toRadians(-132))
                         .build()
         );
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
