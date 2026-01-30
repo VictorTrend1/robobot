@@ -46,7 +46,7 @@ public abstract class BaseAuto extends LinearOpMode {
         ruleta.goTo(Ruleta.Slot.S1);
         shooter.retractKicker();
         tureta.goDefault();
-        SHOOT_MIN_OK = 1550;
+        SHOOT_MIN_OK = 1650;
     }
     protected abstract void onRun();
     protected final void waitShooterAtSpeed(double minOk) {

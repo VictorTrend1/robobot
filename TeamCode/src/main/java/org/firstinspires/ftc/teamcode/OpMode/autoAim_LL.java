@@ -1,40 +1,39 @@
 package org.firstinspires.ftc.teamcode.OpMode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import org.firstinspires.ftc.teamcode.systems.Tureta;
-
+@Config
 public class autoAim_LL {
-    private static final int PIPELINE_INDEX = 2;
 
-    private static final double POS_MIN = 0.20;
-    private static final double POS_MAX = 0.80;
+    private static final int Tx_SIGN = -1;
 
-    private static final double KP = 0.010;
-    private static final double KD = 0.002;
-    private static final double DEADBAND_DEG = 0.50;
-    private static final double MAX_STEP = 0.020;
-    private static final int ty_SIGN = +1;
 
-    private static final int STABLE_FRAMES_REQUIRED = 2;
-    private static final long HOLD_LAST_MS = 100;
-    private static final double ty_ALPHA = 0.35;
-    private static final double MAX_JUMP_DEG = 10.0;
 
-    private Tureta tureta;
-    private Limelight3A limelight;
+    private final Tureta tureta;
+    public Limelight3A limelight;
     private boolean started = false;
 
-    private int stableCount = 0;
-    private long lastGoodMs = 0;
+    private static final double DEADBAND = 4;     // deg
 
-    private boolean filtInit = false;
-    private double tyFilt = 0.0;
-    private double tyFiltPrev = 0.0;
+    private static final double K = 0.2;         // servoUnitsPerDegPerSec
+    private static final double MAX_VEL = 0.12;     // servoUnitsPerSec (limits speed)
 
-    private long lastNs = 0L;
+    private long lastNs = 0;
+
+    private boolean dirReady = false;
+    private int dirSign = +1;
+    private boolean probePending = false;
+    private double probeBasePos = 0.0;
+    private double probeBaseAbsTx = 0.0;
+    private long lastValidMs = 0L;
+    private static final long HOLD_MS = 200;
+    private double txFilt = 0.0;
+    private static final double TX_ALPHA = 0.3;
+    private static final double PROBE_DELTA = 0.006;
+    private static final double K_VEL = 0.06;
 
     public autoAim_LL(Tureta tureta) {
         this.tureta = tureta;
@@ -53,77 +52,98 @@ public class autoAim_LL {
     }
 
     public void reset() {
-        stableCount = 0;
-        lastGoodMs = 0;
-        filtInit = false;
-        tyFilt = 0.0;
-        tyFiltPrev = 0.0;
+        txFilt = 0.0;
         lastNs = 0L;
+        lastValidMs = 0L;
+        dirReady = false;
+        dirSign = +1;
+        probePending = false;
+        probeBasePos = 0.0;
+        probeBaseAbsTx = 0.0;
     }
 
-    public boolean updateAim() {
-        if (!started || limelight == null) return false;
+    public void updateAim() {
+        if (!started || limelight == null) return;
 
-        LLResult result = limelight.getLatestResult();
+        LLResult r = limelight.getLatestResult();
         long nowMs = System.currentTimeMillis();
 
-        if (result != null && result.isValid()) {
-            double ty = result.getTy();
-
-            if (!filtInit) {
-                tyFilt = ty;
-                tyFiltPrev = ty;
-                filtInit = true;
-                lastNs = System.nanoTime();
-                stableCount = 1;
-                lastGoodMs = nowMs;
-                return false;
-            }
-
-            if (Math.abs(ty - tyFilt) > MAX_JUMP_DEG) {
-                stableCount = 0;
-                return false;
-            }
-
-            tyFiltPrev = tyFilt;
-            tyFilt = tyFilt + ty_ALPHA * (ty - tyFilt);
-
-            lastGoodMs = nowMs;
-            stableCount++;
-
-        } else {
-            if (!(filtInit && (nowMs - lastGoodMs) <= HOLD_LAST_MS)) {
-                stableCount = 0;
-                filtInit = false;
+        if (r == null || !r.isValid()) {
+            if (lastValidMs != 0 && (nowMs - lastValidMs) > HOLD_MS) {
                 tureta.goDefault();
-                return false;
+                dirReady = false;
+                probePending = false;
+                lastNs = 0L;
             }
-            stableCount = Math.min(stableCount, STABLE_FRAMES_REQUIRED);
+            return;
         }
 
+        double tx = r.getTx();
+        lastValidMs = nowMs;
 
-        if (stableCount < STABLE_FRAMES_REQUIRED) return false;
+        txFilt = txFilt + TX_ALPHA * (tx - txFilt);
+
+        if (!dirReady) {
+            if (!probePending) {
+                probeBaseAbsTx = Math.abs(txFilt);
+                probeBasePos = tureta.getPosition();
+                tureta.setPosition(probeBasePos + PROBE_DELTA);
+                probePending = true;
+
+            } else {
+                double newAbs = Math.abs(txFilt);
+                if (newAbs < probeBaseAbsTx) dirSign = +1;
+                else dirSign = -1;
+                tureta.setPosition(probeBasePos);
+                probePending = false;
+                dirReady = true;
+
+            }
+        }
 
         long nowNs = System.nanoTime();
         double dt = (lastNs == 0L) ? 0.02 : (nowNs - lastNs) * 1e-9;
         lastNs = nowNs;
         if (dt < 0.008) dt = 0.008;
-        if (dt > 0.120) dt = 0.120;
+        if (dt > 0.050) dt = 0.050;
 
-        double errDeg = ty_SIGN * tyFilt;
-        if (Math.abs(errDeg) <= DEADBAND_DEG) return false;
+        LLResult result = limelight.getLatestResult();
 
-        double dErr = (tyFilt - tyFiltPrev) / dt;
+        if (result != null && result.isValid()) {
 
-        double delta = (KP * errDeg) + (KD * dErr);
-        if (delta > MAX_STEP) delta = MAX_STEP;
-        if (delta < -MAX_STEP) delta = -MAX_STEP;
+            if (Math.abs(tx) > DEADBAND) {
+                double vel = Tx_SIGN * K * tx;
+                if (vel > MAX_VEL) vel = MAX_VEL;
+                if (vel < -MAX_VEL) vel = -MAX_VEL;
 
-        double next = tureta.getPosition() + delta;
-        if (next < POS_MIN) next = POS_MIN;
-        if (next > POS_MAX) next = POS_MAX;
+                double next = tureta.getPosition() + vel * dt;
+                tureta.setPosition(Tureta.clamp(next));
+            }
+        }
+    }
 
-        tureta.setPosition(next);
-        return true;
+    public  void getToPos(boolean pressed){
+        if(pressed){
+            double sum = 0;
+            int n = 0;
+            for (int i = 0; i < 3; i++) {
+                LLResult r = limelight.getLatestResult();
+                if (r != null && r.isValid()) {
+                    sum += r.getTx();
+                    n++;
+                }
+                try { Thread.sleep(20); } catch (InterruptedException ignored) {}
+            }
+
+            if (n > 0) {
+                double tx = sum / n;
+
+                double POS_PER_DEG = 0.003;
+                int TX_SIGN = -1;
+
+                double target = tureta.getPosition() + TX_SIGN * tx * POS_PER_DEG;
+                tureta.setPosition(target);
+            }
+        }
     }
 }

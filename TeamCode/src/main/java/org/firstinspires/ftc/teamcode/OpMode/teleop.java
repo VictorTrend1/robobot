@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Auto.BaseAuto;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Inaltime;
 import org.firstinspires.ftc.teamcode.systems.RampSensors;
@@ -24,6 +25,7 @@ public class teleop extends LinearOpMode {
     private Servo led;
 
     private static final Ruleta.Plan3 SCORE_PLAN = Ruleta.Plan3.PPP;
+    HardwareMap hm;
 
 
     @Override
@@ -65,6 +67,7 @@ public class teleop extends LinearOpMode {
         Edge ballEdge = new Edge();
         Edge shootEdge = new Edge();
 
+
         Ruleta.Slot currentScoreSlot = null;
         Ruleta.Slot currentCollectSlot = Ruleta.Slot.C1;
         int shotsDone = 0;
@@ -74,14 +77,17 @@ public class teleop extends LinearOpMode {
         intake.resetForIntake();
         shooter.safeForRuletaRotate();
         ruleta.goTo(Ruleta.Slot.C1);
-        tureta.goDefault();
 
         PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
 
 
 
+
         waitForStart();
+        tureta.goDefault();
+
         thread2.start();
+
 
 
         while (opModeIsActive()) {
@@ -105,9 +111,7 @@ public class teleop extends LinearOpMode {
                         Ruleta.Slot next = ruleta.firstFreeCollectSlot();
                         if (next != null) {
                             shooter.safeForRuletaRotate();
-                            sleep(200);
                             ruleta.goTo(next);
-                            currentCollectSlot = next;
 
                         }
                     }
@@ -118,7 +122,6 @@ public class teleop extends LinearOpMode {
 
 
                     if (intake.isReadyForScore() || goscorare) {
-                        intake.stop();
                         ruleta.setPlan(SCORE_PLAN);
 
                         ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
@@ -146,7 +149,7 @@ public class teleop extends LinearOpMode {
                 case SCORE: {
                     telemetry.update();
 
-                    if(Math.abs(drive.pose.position.x)>=55){
+                    if(gamepad1.dpad_left){
                         shooter.spinUpTo(1400);
                     }else                     shooter.spinUp();
 
@@ -179,6 +182,7 @@ public class teleop extends LinearOpMode {
                     ruleta.goTo(currentScoreSlot);
 
                     sleep(200);
+                    //shoot
                     boolean shootPressed = gamepad1.cross;
                     if (shootEdge.rising(shootPressed) ) {
                         for (int i=0; i<=1; i++){
@@ -201,6 +205,7 @@ public class teleop extends LinearOpMode {
                             state = State.INTAKE;
                         }
                     }
+
 
 
                     telemetry.addData("STATE", "SCORE");
@@ -287,8 +292,9 @@ public class teleop extends LinearOpMode {
 
         @Override
         public void run( ) {
-            while (!Thread.currentThread().isInterrupted()) {
 
+            waitForStart();
+            while (!Thread.currentThread().isInterrupted()) {
                 if(isRunning) {
                     drive.setDrivePowers(new PoseVelocity2d(
                             new Vector2d(
@@ -307,7 +313,6 @@ public class teleop extends LinearOpMode {
             }
         }
     }
-
 }
 
 

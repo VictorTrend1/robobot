@@ -17,6 +17,7 @@ public class Ruleta {
     public static final double SLOT_S1 = 0.344;
     public static final double SLOT_S2 = 0.561;
     public static final double SLOT_S3 = 0.79;
+    private static double lastpos = 0;
 
     public enum Color { PURPLE, GREEN }
 
@@ -67,8 +68,12 @@ public class Ruleta {
         s2.setPosition(slot.pos);
     }
     public void setPoz(double pozitie){
+        lastpos = pozitie;
         s1.setPosition(pozitie);
         s2.setPosition(pozitie);
+    }
+    public static double getPosition(){
+        return lastpos;
     }
 
     public void clear() {

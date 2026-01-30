@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Tureta {
 
-    private static final double POS_MIN = 0.20;
-    private static final double POS_MAX = 0.80;
-    private static final double POS_DEFAULT = 0.50;
+    private static final double POS_MIN = 0.10;
+    private static final double POS_MAX = 0.50;
+    private static final double POS_DEFAULT = 0.30;
 
     private final Servo s1;
     private final Servo s2;
@@ -20,7 +20,7 @@ public class Tureta {
     }
 
     public void setPosition(double requestedPos) {
-        double pos = clamp(requestedPos);
+        double pos = requestedPos;
         lastPos = pos;
         s1.setPosition(pos);
         s2.setPosition(pos);
@@ -42,9 +42,9 @@ public class Tureta {
         return lastPos >= POS_MAX;
     }
 
-    private static double clamp(double v) {
-        if (v < POS_MIN) return POS_MIN;
-        if (v > POS_MAX) return POS_MAX;
+    public static double clamp(double v) {
+        if (v <= POS_MIN) return POS_MIN+0.01;
+        if (v >= POS_MAX) return POS_MAX-0.01;
         return v;
     }
 }

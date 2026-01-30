@@ -19,16 +19,6 @@ public class Auto extends BaseAuto {
 
     @Override
     protected void onInit() {
-        Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(1);
-        limelight.start();
-        super.onInit();
-
-
-        while(opModeInInit()){
-            LLResult result = limelight.getLatestResult();
-            plan = getAprilTagId(result);
-        }
 
         SHOOT_MIN_OK = 1600;
         drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
@@ -36,22 +26,16 @@ public class Auto extends BaseAuto {
     @Override
     protected void onRun() {
 
-        telemetry.addData("plan", plan);
-        telemetry.update();
 
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(0,0,0))
-                        .afterTime(0, ()->{shooter.spinUpTo(1650);
-                            ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(aim.turretDegreesToServo(-12));
-                        })
+
                         .setTangent(Math.toRadians(0))
-                        .splineToConstantHeading(new Vector2d(9, -2), Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(40, -24), Math.toRadians(90))
                         .build()
         );
-        shootOnPlan(plan);
-        shooter.stopFlywheel();
+
         //=============INTAKE================
 /*
         Actions.runBlocking(

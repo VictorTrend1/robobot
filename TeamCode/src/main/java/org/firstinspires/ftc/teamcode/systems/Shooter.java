@@ -7,12 +7,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Shooter {
 
-    private final DcMotorEx flywheel;
-    private final DcMotorEx flywheel2;
+    public final DcMotorEx flywheel;
+    public final DcMotorEx flywheel2;
     private final Servo kicker;
 
-    private  double TARGET_VEL = 1700;
-    private  double MIN_VEL = 1600;
+    private  double TARGET_VEL = 1780;
+    private  double MIN_VEL = 1720;
 
     private static final double KICK_PUSH = 0.3;
     private static final double KICK_RETRACT = 0.595;
@@ -23,7 +23,10 @@ public class Shooter {
     public Shooter(HardwareMap hw) {
         flywheel = hw.get(DcMotorEx.class, "shooter1");
         flywheel2 = hw.get(DcMotorEx.class, "shooter2");
+        /// TODO reverse la un motor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         kicker = hw.get(Servo.class, "kicker");
+        flywheel2.setDirection(DcMotorEx.Direction.REVERSE);
+        flywheel.setDirection(DcMotorEx.Direction.FORWARD);
         flywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
         flywheel2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
         stopAll();
