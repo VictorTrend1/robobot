@@ -45,6 +45,7 @@ public class teleop extends LinearOpMode {
 
         boolean lastDpadDown = false;
 
+
         led = hardwareMap.get(Servo.class, "led");
 
         Ruleta ruleta = new Ruleta(hardwareMap);
@@ -75,7 +76,6 @@ public class teleop extends LinearOpMode {
         // INIT
         shooter.stopAll();
         intake.resetForIntake();
-        shooter.safeForRuletaRotate();
         ruleta.goTo(Ruleta.Slot.C1);
 
         PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
@@ -95,33 +95,40 @@ public class teleop extends LinearOpMode {
             if (gamepad1.right_trigger != 0) intake.start();
             else if (gamepad1.left_trigger !=0) intake.reverse();
             else intake.stop();
+            Edge dpadLeftEdge = new Edge();
+            if (dpadLeftEdge.rising(gamepad2.dpad_left)) {
+                currentCollectSlot = nextCollectSlot(currentCollectSlot);
+                ruleta.goTo(currentCollectSlot);
+            }
 
 
             switch (state) {
 
                 case INTAKE: {
 
-                    shooter.safeForRuletaRotate();
-
                     boolean ballNow = sensors.ballPresent();
                     if (ballEdge.rising(ballNow)) {
+
                         boolean isGreen = !sensors.isPurple();
                         intake.onBallEntered(isGreen);
 
                         Ruleta.Slot next = ruleta.firstFreeCollectSlot();
                         if (next != null) {
-                            shooter.safeForRuletaRotate();
                             ruleta.goTo(next);
 
                         }
+
                     }
 
                     if(circleEdge.rising(gamepad1.circle)){
                         goscorare = true;
                     }
+                    if(intake.isReadyForScore()){
+                        shooter.spinUp();
+                        shooter.kicker.setVelocity(6000);
+                    }
 
-
-                    if (intake.isReadyForScore() || goscorare) {
+                    if (goscorare) {
                         ruleta.setPlan(SCORE_PLAN);
 
                         ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
@@ -131,10 +138,7 @@ public class teleop extends LinearOpMode {
                         shotsDone = 0;
                         currentScoreSlot = null;
 
-                        shooter.retractKicker();
-                        shooter.spinUp();
                         sleep(250);
-
                         shootEdge.reset(false);
                         state = State.SCORE;
                         telemetry.update();
@@ -149,18 +153,12 @@ public class teleop extends LinearOpMode {
                 case SCORE: {
                     telemetry.update();
 
-                    if(gamepad1.dpad_left){
-                        shooter.spinUpTo(1400);
-                    }else                     shooter.spinUp();
-
 
                     boolean dpadDown = gamepad1.dpad_down;
+
                     if (dpadDown && !lastDpadDown) {
                         shooter.toggleRPM();
                     }
-
-
-
                     lastDpadDown = dpadDown;
 
                     if(shooter.atSpeed()) {
@@ -178,33 +176,37 @@ public class teleop extends LinearOpMode {
                             break;
                         }
                     }
-                    shooter.safeForRuletaRotate();
+                    sleep(200);
+                    currentScoreSlot = Ruleta.Slot.S1;
                     ruleta.goTo(currentScoreSlot);
 
-                    sleep(200);
                     //shoot
+                    boolean spinerUp = gamepad1.left_bumper;
+
                     boolean shootPressed = gamepad1.cross;
-                    if (shootEdge.rising(shootPressed) ) {
-                        for (int i=0; i<=1; i++){
-                            shooter.pushKicker();
-                            sleep(200);
-                            shooter.retractKicker();
-                            sleep(200);
+                    shooter.kicker.setVelocity(6000);
+                    if (shootEdge.rising(shootPressed)) {
+                        for (int i = 0; i < 3 && currentScoreSlot != null; i++) {
+
+                            ruleta.popScoredBall(currentScoreSlot);
+                            shotsDone++;
+                            currentScoreSlot = pickNextScoreSlot(ruleta);
+                            sleep(700);
+
+                            if (currentScoreSlot != null) {
+                                ruleta.goTo(currentScoreSlot);
+                                sleep(650);
+                            }
                         }
 
-
-
-                        ruleta.popScoredBall(currentScoreSlot);
-                        shotsDone++;
-
-                        currentScoreSlot = pickNextScoreSlot(ruleta);
-
-                        if (shotsDone >= 3 || currentScoreSlot == null) {
-                            goscorare = false;
-                            resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
-                            state = State.INTAKE;
-                        }
+                        sleep(400);
+                        shooter.kicker.setPower(0);
+                        goscorare = false;
+                        resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
+                        state = State.INTAKE;
+                        shotsDone = 0;
                     }
+
 
 
 
@@ -240,9 +242,9 @@ public class teleop extends LinearOpMode {
     private static Ruleta.Slot pickNextScoreSlot(Ruleta r) {
         Ruleta.Slot s = r.nextScoreSlotFromPlan();
         if (s != null) return s;
-        if (!r.isEmpty(Ruleta.Slot.S1)) return Ruleta.Slot.S1;
-        if (!r.isEmpty(Ruleta.Slot.S2)) return Ruleta.Slot.S2;
         if (!r.isEmpty(Ruleta.Slot.S3)) return Ruleta.Slot.S3;
+        if (!r.isEmpty(Ruleta.Slot.S2)) return Ruleta.Slot.S2;
+        if (!r.isEmpty(Ruleta.Slot.S1)) return Ruleta.Slot.S1;
         return null;
     }
 
@@ -254,7 +256,6 @@ public class teleop extends LinearOpMode {
     ) {
         shooter.stopAll();
         intake.resetForIntake();
-        shooter.safeForRuletaRotate();
         ruleta.goTo(Ruleta.Slot.C1);
 
         rt.reset(false);

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -9,7 +11,8 @@ public class Shooter {
 
     public final DcMotorEx flywheel;
     public final DcMotorEx flywheel2;
-    private final Servo kicker;
+    //private final Servo kicker;
+    public final DcMotorEx kicker;
 
     private  double TARGET_VEL = 1780;
     private  double MIN_VEL = 1720;
@@ -24,7 +27,10 @@ public class Shooter {
         flywheel = hw.get(DcMotorEx.class, "shooter1");
         flywheel2 = hw.get(DcMotorEx.class, "shooter2");
         /// TODO reverse la un motor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        kicker = hw.get(Servo.class, "kicker");
+       // kicker = hw.get(Servo.class, "kicker");
+        kicker = hw.get(DcMotorEx.class,"kicker");
+        kicker.setDirection(DcMotorSimple.Direction.REVERSE);
+        kicker.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
         flywheel2.setDirection(DcMotorEx.Direction.REVERSE);
         flywheel.setDirection(DcMotorEx.Direction.FORWARD);
         flywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
@@ -44,10 +50,10 @@ public class Shooter {
     public boolean atSpeed() { return flywheel.getVelocity() >= MIN_VEL; }
     public double getVelocity() { return flywheel.getVelocity(); }
 
-    public void pushKicker() { kicker.setPosition(KICK_PUSH); }
-    public void retractKicker() { kicker.setPosition(KICK_RETRACT); }
+//    public void pushKicker() { kicker.setPosition(KICK_PUSH); }
+//    public void retractKicker() { kicker.setPosition(KICK_RETRACT); }
 
-    public void safeForRuletaRotate() { retractKicker(); }
+//    public void safeForRuletaRotate() { retractKicker(); }
     public void toggleRPM() {
         if (TARGET_VEL == 1700) {
             TARGET_VEL = 1550;
@@ -69,6 +75,6 @@ public class Shooter {
 
     public void stopAll() {
         stopFlywheel();
-        retractKicker();
+       // retractKicker();
     }
 }

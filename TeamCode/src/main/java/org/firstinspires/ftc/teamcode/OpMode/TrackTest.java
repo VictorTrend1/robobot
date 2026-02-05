@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.systems.Tureta;
 @TeleOp(name = "TrackTest")
 public class TrackTest extends LinearOpMode {
 
-    private static final int LIMELIGHT_PIPELINE = 2;
+    private static final int LIMELIGHT_PIPELINE = 1;
 
     private static final double START_X = 0.0;
     private static final double START_Y = 0.0;

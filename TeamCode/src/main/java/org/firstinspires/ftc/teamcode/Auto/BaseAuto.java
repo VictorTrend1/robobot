@@ -13,7 +13,6 @@ public abstract class BaseAuto extends LinearOpMode {
     protected Ruleta ruleta;
     protected Tureta tureta;
     protected Intake intake;
-    protected aim aim;
     protected int SHOOT_MIN_OK;
 
     protected RampSensors sensors;
@@ -29,7 +28,6 @@ public abstract class BaseAuto extends LinearOpMode {
         ruleta  = new Ruleta(hardwareMap);
         tureta  = new Tureta(hardwareMap);
         intake  = new Intake(hardwareMap);
-        aim = new aim(tureta);
         sensors = new RampSensors(hardwareMap);
         balls=0;
 
@@ -43,7 +41,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected void onInit() {
         ruleta.goTo(Ruleta.Slot.S1);
-        shooter.retractKicker();
+        //shooter.retractKicker();
         tureta.goDefault();
         SHOOT_MIN_OK = 1650;
     }
@@ -54,27 +52,27 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected final void shoot_3() {
         waitShooterAtSpeed(SHOOT_MIN_OK);
-        shooter.pushKicker();
+        //shooter.pushKicker();
         sleep(WAIT_MS);
-        shooter.retractKicker();
+        //shooter.retractKicker();
         sleep(WAIT_MS);
 
 
         ruleta.goTo(Ruleta.Slot.S2);
         waitShooterAtSpeed(SHOOT_MIN_OK);
         sleep(WAIT_MS);
-        shooter.pushKicker();
+        //shooter.pushKicker();
         sleep(WAIT_MS);
-        shooter.retractKicker();
+        //shooter.retractKicker();
         sleep(WAIT_MS);
 
 
         ruleta.goTo(Ruleta.Slot.S3);
         waitShooterAtSpeed(SHOOT_MIN_OK);
         sleep(WAIT_MS);
-        shooter.pushKicker();
+        //shooter.pushKicker();
         sleep(WAIT_MS);
-        shooter.retractKicker();
+        //shooter.retractKicker();
 
 
     }
@@ -95,7 +93,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected final void shootOnPlan(Ruleta.Plan3 plan) {
         preparePreloadGreenInS1PurpleInS2S3(plan);
-        shooter.safeForRuletaRotate();
+        //shooter.safeForRuletaRotate();
         sleep(250);
 
         int shotsDone = 0;
@@ -104,7 +102,7 @@ public abstract class BaseAuto extends LinearOpMode {
             Ruleta.Slot slot = pickNextScoreSlot(ruleta);
             if (slot == null) break;
 
-            shooter.safeForRuletaRotate();
+            //shooter.safeForRuletaRotate();
             ruleta.goTo(slot);
 
             sleep(400);
@@ -121,9 +119,9 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected final void kick() {
         for (int i = 0; i <= 1; i++) {
-            shooter.pushKicker();
+            //shooter.pushKicker();
             sleep(200);
-            shooter.retractKicker();
+            //shooter.retractKicker();
             sleep(100);
         }
     }

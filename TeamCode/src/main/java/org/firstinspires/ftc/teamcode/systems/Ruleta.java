@@ -17,6 +17,7 @@ public class Ruleta {
     public static final double SLOT_S1 = 0.344;
     public static final double SLOT_S2 = 0.561;
     public static final double SLOT_S3 = 0.79;
+    public static final double SAFE = 0.52;
     private static double lastpos = 0;
 
     public enum Color { PURPLE, GREEN }
@@ -146,4 +147,7 @@ public class Ruleta {
             Ruleta.SLOT_C2,
             Ruleta.SLOT_C3
     };
+    public void colectareSafe(){
+        setPoz(SAFE);
+    }
 }

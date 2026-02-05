@@ -39,7 +39,7 @@ public class auto_red_close extends BaseAuto {
                 drive.actionBuilder(new Pose2d(0,0,0))
                         .afterTime(0, ()->{shooter.spinUpTo(1400);
                             ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(aim.turretDegreesToServo(-27));
+                            tureta.setPosition(-27);
                         })
                         .strafeToLinearHeading(new Vector2d(61, 5), Math.toRadians(-132))
                         .build()
