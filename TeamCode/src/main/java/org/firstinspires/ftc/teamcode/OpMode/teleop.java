@@ -99,7 +99,14 @@ public class teleop extends LinearOpMode {
             if (dpadLeftEdge.rising(gamepad2.dpad_left)) {
                 currentCollectSlot = nextCollectSlot(currentCollectSlot);
                 ruleta.goTo(currentCollectSlot);
+
             }
+
+            boolean dpadDown = gamepad1.dpad_down;
+            if (dpadDown && !lastDpadDown) {
+                shooter.toggleRPM();
+            }
+            lastDpadDown = dpadDown;
 
 
             switch (state) {
@@ -146,6 +153,7 @@ public class teleop extends LinearOpMode {
 
                     telemetry.addData("STATE", "INTAKE");
                     telemetry.addData("Balls", intake.getBallsIntaked());
+                    telemetry.addData("RPM: ", shooter.showRpm());
                     telemetry.update();
                     break;
                 }
@@ -154,12 +162,7 @@ public class teleop extends LinearOpMode {
                     telemetry.update();
 
 
-                    boolean dpadDown = gamepad1.dpad_down;
 
-                    if (dpadDown && !lastDpadDown) {
-                        shooter.toggleRPM();
-                    }
-                    lastDpadDown = dpadDown;
 
                     if(shooter.atSpeed()) {
                         led.setPosition(1);
@@ -191,11 +194,11 @@ public class teleop extends LinearOpMode {
                             ruleta.popScoredBall(currentScoreSlot);
                             shotsDone++;
                             currentScoreSlot = pickNextScoreSlot(ruleta);
-                            sleep(700);
+                            sleep(450);
 
                             if (currentScoreSlot != null) {
                                 ruleta.goTo(currentScoreSlot);
-                                sleep(650);
+                                sleep(400);
                             }
                         }
 

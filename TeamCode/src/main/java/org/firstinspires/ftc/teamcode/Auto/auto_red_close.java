@@ -2,8 +2,14 @@ package org.firstinspires.ftc.teamcode.Auto;
 
 import static org.firstinspires.ftc.teamcode.recunoastere.Limelight.getAprilTagId;
 
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -12,6 +18,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Ruleta;
+
+import java.util.Arrays;
 
 @Autonomous(name = "auto_red_close")
 public class auto_red_close extends BaseAuto {
@@ -32,16 +40,19 @@ public class auto_red_close extends BaseAuto {
     }
     @Override
     protected void onRun() {
-
-
+        VelConstraint slow_vel = new MinVelConstraint(Arrays.asList(
+                new TranslationalVelConstraint(20),
+                new AngularVelConstraint(Math.PI/2)
+        ));
+        AccelConstraint slow_acc = new ProfileAccelConstraint(-20, 30);
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(0,0,0))
-                        .afterTime(0, ()->{shooter.spinUpTo(1400);
+                        .afterTime(0, ()->{shooter.spinUpTo(1450);
                             ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(-27);
+                            tureta.setPosition(0.2);
                         })
-                        .strafeToLinearHeading(new Vector2d(61, 5), Math.toRadians(-132))
+                        .strafeToLinearHeading(new Vector2d(54, 2), Math.toRadians(-132))
                         .build()
         );
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -60,9 +71,50 @@ public class auto_red_close extends BaseAuto {
         telemetry.update();
         if(plan==null){plan= Ruleta.Plan3.PPG;}
 
+        tureta.setPosition(0.16);
+        shootOnPlan(plan);
+
+        //=============INTAKE================
+
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
+                        .afterTime(0,()->{shooter.stopFlywheel();
+                            intake.start();})
+
+                        .strafeToLinearHeading(new Vector2d(-21, 41), Math.toRadians(-136))
+
+                        .afterTime(0, ()->{ new Thread (() -> {
+                            intake.start();
+                            ruleta.goTo(Ruleta.Slot.C1);
+                            sleep(300);
+                            while(!sensors.ballPresent()){}
+                            ruleta.goTo(Ruleta.Slot.C2);
+                            sleep(300);
+                            while(!sensors.ballPresent()){}
+                            ruleta.goTo(Ruleta.Slot.C3);
+                            sleep(300);
+                            while(!sensors.ballPresent()){}
+                            ruleta.goTo(Ruleta.Slot.S1);
+                        }).start();
+
+                        })
+                        .strafeToLinearHeading(new Vector2d(-25, 41), Math.toRadians(-136),slow_vel,slow_acc)
+                        .build());
+
+
+
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(0,0,0))
+                        .afterTime(0, ()->{
+                            intake.stop();
+                            shooter.spinUpTo(1400);
+                        })
+                        .strafeToLinearHeading(new Vector2d(-3, 54), Math.toRadians(-45))
+                        .build()
+        );
 
         shootOnPlan(plan);
-        //=============INTAKE================
+
 
 
 
@@ -78,14 +130,6 @@ public class auto_red_close extends BaseAuto {
 
 
         sleep(30000);
-        //shoot_3();
-        /*
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-                        .strafeTo(new Vector2d(-40, 10))
-                        .build()
-        );
 
-         */
     }
 }

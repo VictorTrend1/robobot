@@ -53,9 +53,8 @@ public class auto_blue_close extends BaseAuto {
                 drive.actionBuilder(new Pose2d(0,0,0))
                         .afterTime(0, ()->{
                             ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(0.26);
                         })
-                        .strafeToLinearHeading(new Vector2d(-3, -54), Math.toRadians(93))
+                        .strafeToLinearHeading(new Vector2d(-3, -53), Math.toRadians(93))
                         .build()
         );
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -75,49 +74,46 @@ public class auto_blue_close extends BaseAuto {
         if(plan==null){plan= Ruleta.Plan3.PPG;}
 
         shooter.spinUpTo(1400);
-        tureta.setPosition(0.3);
-
+        tureta.setPosition(0.30);
+        intake.start();
         shootOnPlan(plan);
-
-
+        intake.stop();
+        shooter.stopFlywheel();
+//
+//        Actions.runBlocking(
+//                drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
+//                        .afterTime(0,()->{shooter.stopFlywheel();
+//                        intake.start();})
+//
+//                        .strafeToLinearHeading(new Vector2d(-21, -41), Math.toRadians(136))
+//
+//                        .afterTime(0, ()->{ new Thread (() -> {
+//                            intake.start();
+//                            ruleta.goTo(Ruleta.Slot.C1);
+//                            sleep(300);
+//                            while(!sensors.ballPresent()){}
+//                            ruleta.goTo(Ruleta.Slot.C2);
+//                            sleep(300);
+//                            while(!sensors.ballPresent()){}
+//                            ruleta.goTo(Ruleta.Slot.C3);
+//                            sleep(300);
+//                            while(!sensors.ballPresent()){}
+//                            ruleta.goTo(Ruleta.Slot.S1);
+//                        }).start();
+//
+//                        })
+//                        .strafeToLinearHeading(new Vector2d(-25, -41), Math.toRadians(136),slow_vel,slow_acc)
+//                        .build());
+//
+//
+//
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
-                        .afterTime(0,()->{shooter.stopFlywheel();
-                        intake.start();})
-
-                        .strafeToLinearHeading(new Vector2d(-21, -41), Math.toRadians(136))
-
-                        .afterTime(0, ()->{ new Thread (() -> {
-                            intake.start();
-                            ruleta.goTo(Ruleta.Slot.C1);
-                            sleep(300);
-                            while(!sensors.ballPresent()){}
-                            ruleta.goTo(Ruleta.Slot.C2);
-                            sleep(300);
-                            while(!sensors.ballPresent()){}
-                            ruleta.goTo(Ruleta.Slot.C3);
-                            sleep(300);
-                            while(!sensors.ballPresent()){}
-                            ruleta.goTo(Ruleta.Slot.S1);
-                        }).start();
-
-                        })
-                        .strafeToLinearHeading(new Vector2d(-25, -41), Math.toRadians(136),slow_vel,slow_acc)
-                        .build());
-
-
-
-        Actions.runBlocking(
-                drive.actionBuilder(new Pose2d(0,0,0))
-                        .afterTime(0, ()->{
-                            intake.stop();
-                            shooter.spinUpTo(1400);
-                        })
-                        .strafeToLinearHeading(new Vector2d(-3, -54), Math.toRadians(45))
+                        .strafeToLinearHeading(new Vector2d(-3, -20), Math.toRadians(45))
                         .build()
         );
-
-        shootOnPlan(plan);
+//
+//        shootOnPlan(plan);
 
 
 //        Actions.runBlocking(

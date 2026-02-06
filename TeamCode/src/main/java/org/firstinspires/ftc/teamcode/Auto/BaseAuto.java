@@ -52,18 +52,14 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected final void shoot_3() {
         waitShooterAtSpeed(SHOOT_MIN_OK);
-        //shooter.pushKicker();
         sleep(WAIT_MS);
-        //shooter.retractKicker();
         sleep(WAIT_MS);
 
 
         ruleta.goTo(Ruleta.Slot.S2);
         waitShooterAtSpeed(SHOOT_MIN_OK);
         sleep(WAIT_MS);
-        //shooter.pushKicker();
         sleep(WAIT_MS);
-        //shooter.retractKicker();
         sleep(WAIT_MS);
 
 
@@ -90,40 +86,34 @@ public abstract class BaseAuto extends LinearOpMode {
         ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
         ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
     }
-
     protected final void shootOnPlan(Ruleta.Plan3 plan) {
         preparePreloadGreenInS1PurpleInS2S3(plan);
-        //shooter.safeForRuletaRotate();
         sleep(250);
 
         int shotsDone = 0;
 
         while (opModeIsActive() && shotsDone < 3) {
+
             Ruleta.Slot slot = pickNextScoreSlot(ruleta);
             if (slot == null) break;
 
-            //shooter.safeForRuletaRotate();
             ruleta.goTo(slot);
-
             sleep(400);
 
-            while (opModeIsActive() && !shooter.atSpeedTo(SHOOT_MIN_OK)) {}
+            while (opModeIsActive() && !shooter.atSpeedTo(SHOOT_MIN_OK)) {
 
+            }
             kick();
-            sleep(300);
-
+            sleep(650);
             ruleta.popScoredBall(slot);
             shotsDone++;
         }
     }
 
     protected final void kick() {
-        for (int i = 0; i <= 1; i++) {
-            //shooter.pushKicker();
-            sleep(200);
-            //shooter.retractKicker();
-            sleep(100);
-        }
+        shooter.kicker.setVelocity(6000);
+        sleep(600);
+        shooter.kicker.setPower(0);
     }
 
     protected final Ruleta.Slot pickNextScoreSlot(Ruleta r) {

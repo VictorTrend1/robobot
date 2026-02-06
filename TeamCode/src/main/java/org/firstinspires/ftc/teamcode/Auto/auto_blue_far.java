@@ -63,14 +63,20 @@ public class auto_blue_far extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(0,0,0))
                         .afterTime(0, ()->{shooter.spinUpTo(1700);
+                            ruleta.setPoz(Ruleta.SAFE);
                             ruleta.goTo(Ruleta.Slot.S1);
                             tureta.setPosition(0.36);
                         })
-                        .strafeToLinearHeading(new Vector2d(9, 2), Math.toRadians(0))
+                        .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
         );
+        sleep(300);
+        intake.start();
         shootOnPlan(plan);
+        shootOnPlan(plan);
+        shooter.kicker.setPower(0);
         shooter.stopFlywheel();
+        intake.stop();
         //=============INTAKE================
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
@@ -79,7 +85,7 @@ public class auto_blue_far extends BaseAuto {
                             shooter.stopFlywheel();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(27, 22), Math.toRadians(89))
+                        .strafeToLinearHeading(new Vector2d(29, 22), Math.toRadians(89))
                         .build()
         );
         Actions.runBlocking(
@@ -95,11 +101,11 @@ public class auto_blue_far extends BaseAuto {
                             ruleta.goTo(Ruleta.Slot.C3);
                             sleep(300);
                             while(!sensors.ballPresent()){}
-                            ruleta.goTo(Ruleta.Slot.S1);
+                            ruleta.setPoz(Ruleta.SAFE);
                         }).start();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(26, 52), Math.toRadians(90),slow_vel,slow_acc)
+                        .strafeToLinearHeading(new Vector2d(28, 52), Math.toRadians(90),slow_vel,slow_acc)
 
                         .build()
         );
@@ -118,13 +124,16 @@ public class auto_blue_far extends BaseAuto {
 //        ruleta.goTo(Ruleta.Slot.S1);
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-                        .afterTime(0.1, ()->{shooter.spinUpTo(1700);
+                        .afterTime(0.1, ()->{shooter.spinUpTo(1680);
                             intake.stop();})
-                        .strafeToLinearHeading(new Vector2d(9, 2), Math.toRadians(0))
+                        .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
         );
+        intake.start();
+        sleep(200);
         shootOnPlan(plan);
-
+        shootOnPlan(plan);
+        intake.stop();
         sleep(30000);
 
     }

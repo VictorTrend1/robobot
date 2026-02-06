@@ -14,11 +14,9 @@ public class Shooter {
     //private final Servo kicker;
     public final DcMotorEx kicker;
 
-    private  double TARGET_VEL = 1780;
-    private  double MIN_VEL = 1720;
+    private  double TARGET_VEL = 1700;
+    private  double MIN_VEL = 1680;
 
-    private static final double KICK_PUSH = 0.3;
-    private static final double KICK_RETRACT = 0.595;
 
     private static final PIDFCoefficients PIDF =
             new PIDFCoefficients(300, 0, 1, 12);
@@ -56,11 +54,11 @@ public class Shooter {
 //    public void safeForRuletaRotate() { retractKicker(); }
     public void toggleRPM() {
         if (TARGET_VEL == 1700) {
-            TARGET_VEL = 1550;
-            MIN_VEL = 1450;
+            TARGET_VEL = 1400;
+            MIN_VEL = 1350;
         } else {
-            TARGET_VEL = 1600;
-            MIN_VEL = 1500;
+            TARGET_VEL = 1700;
+            MIN_VEL = 1650;
         }
     }
     public String showRpm() {
