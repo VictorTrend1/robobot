@@ -62,7 +62,7 @@ public class auto_blue_far extends BaseAuto {
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(0,0,0))
-                        .afterTime(0, ()->{shooter.spinUpTo(1700);
+                        .afterTime(0, ()->{shooter.spinUpTo(1670);
                             ruleta.setPoz(Ruleta.SAFE);
                             ruleta.goTo(Ruleta.Slot.S1);
                             tureta.setPosition(0.36);
@@ -74,10 +74,9 @@ public class auto_blue_far extends BaseAuto {
         intake.start();
         shootOnPlan(plan);
         shootOnPlan(plan);
-        shooter.kicker.setPower(0);
         shooter.stopFlywheel();
         intake.stop();
-        //=============INTAKE================
+//        //=============INTAKE================
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
                         .afterTime(0, ()->{intake.start();
@@ -85,7 +84,7 @@ public class auto_blue_far extends BaseAuto {
                             shooter.stopFlywheel();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(29, 22), Math.toRadians(89))
+                        .strafeToLinearHeading(new Vector2d(28, 22), Math.toRadians(89))
                         .build()
         );
         Actions.runBlocking(
@@ -93,47 +92,40 @@ public class auto_blue_far extends BaseAuto {
                         .afterTime(0, ()->{ new Thread (() -> {
                             intake.start();
                             ruleta.goTo(Ruleta.Slot.C1);
-                            sleep(300);
+                            sleep(200);
                             while(!sensors.ballPresent()){}
                             ruleta.goTo(Ruleta.Slot.C2);
-                            sleep(300);
+                            sleep(200);
                             while(!sensors.ballPresent()){}
                             ruleta.goTo(Ruleta.Slot.C3);
-                            sleep(300);
+                            sleep(200);
                             while(!sensors.ballPresent()){}
                             ruleta.setPoz(Ruleta.SAFE);
                         }).start();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(28, 52), Math.toRadians(90),slow_vel,slow_acc)
+                        .strafeToLinearHeading(new Vector2d(28, 60), Math.toRadians(90),slow_vel,slow_acc)
 
                         .build()
         );
-//        ruleta.goTo(Ruleta.Slot.C2);
-//        Actions.runBlocking(
-//                drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-//                        .strafeToLinearHeading(new Vector2d(26, -39), Math.toRadians(-89))
-//                        .build()
-//        );
-//        ruleta.goTo(Ruleta.Slot.C3);
-//        Actions.runBlocking(
-//                drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-//                        .strafeToLinearHeading(new Vector2d(30, -55), Math.toRadians(-89))
-//                        .build()
-//        );
-//        ruleta.goTo(Ruleta.Slot.S1);
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-                        .afterTime(0.1, ()->{shooter.spinUpTo(1680);
+                        .afterTime(0.1, ()->{
+                            shooter.spinUpTo(1680);
                             intake.stop();})
                         .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
         );
+        tureta.setPosition(0.34);
         intake.start();
         sleep(200);
         shootOnPlan(plan);
-        shootOnPlan(plan);
         intake.stop();
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
+                        .strafeToLinearHeading(new Vector2d(9, 22), Math.toRadians(0))
+                        .build()
+        );
         sleep(30000);
 
     }

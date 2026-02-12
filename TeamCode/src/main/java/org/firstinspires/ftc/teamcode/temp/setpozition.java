@@ -13,9 +13,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class setpozition extends LinearOpMode {
     public static double putere = 0;
     public Servo servo1, servo2;
-    public Servo led;
-    public DcMotorEx kicker;
+    public Servo kicker;
+    public static boolean sortator = false;
+    public static boolean kick = false;
+    public static boolean tureta = false;
     public static double DEG = 0;
+    public Servo tureta1 , tureta2;
 
 
 
@@ -23,20 +26,26 @@ public class setpozition extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         waitForStart();
         while(opModeIsActive()) {
-            kicker = hardwareMap.get(DcMotorEx.class,"kicker");
-            kicker.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            kicker.setPower(putere);
-
+            if(kick){kicker = hardwareMap.get(Servo.class,"kicker");
+            kicker.setPosition(DEG);
+                telemetry.addData("kicker: ", kicker.getPosition());
+            }
+            if(sortator){
             servo1 = hardwareMap.get(Servo.class,"ruleta1");
             servo2 = hardwareMap.get(Servo.class, "ruleta2");
 
             servo1.setPosition(DEG);
             servo2.setPosition(DEG);
-
-
-            telemetry.addData("putere motor: ", kicker.getPower());
-            telemetry.addData("velocity motor: ", kicker.getVelocity());
             telemetry.addData("Ruleta: ", servo1.getPosition());
+
+            }
+            if(tureta){
+                tureta1 = hardwareMap.get(Servo.class,"tureta1");
+                tureta2 = hardwareMap.get(Servo.class,"tureta2");
+                tureta1.setPosition(DEG);
+                tureta2.setPosition(DEG);
+            }
+
             telemetry.update();
         }
 

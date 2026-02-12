@@ -7,7 +7,7 @@ public class Tureta {
 
     private static final double POS_MIN = 0.10;
     private static final double POS_MAX = 0.50;
-    private static final double POS_DEFAULT = 0.30;
+    private static final double POS_DEFAULT = 0.50;
 
     private final Servo s1;
     private final Servo s2;

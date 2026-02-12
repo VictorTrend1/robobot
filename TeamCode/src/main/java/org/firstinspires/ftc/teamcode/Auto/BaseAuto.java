@@ -87,6 +87,7 @@ public abstract class BaseAuto extends LinearOpMode {
         ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
     }
     protected final void shootOnPlan(Ruleta.Plan3 plan) {
+
         preparePreloadGreenInS1PurpleInS2S3(plan);
         sleep(250);
 
@@ -98,22 +99,23 @@ public abstract class BaseAuto extends LinearOpMode {
             if (slot == null) break;
 
             ruleta.goTo(slot);
-            sleep(400);
+            sleep(300);
 
             while (opModeIsActive() && !shooter.atSpeedTo(SHOOT_MIN_OK)) {
 
             }
+            sleep(200);
             kick();
-            sleep(650);
+            sleep(150);
             ruleta.popScoredBall(slot);
             shotsDone++;
         }
     }
 
     protected final void kick() {
-        shooter.kicker.setVelocity(6000);
-        sleep(600);
-        shooter.kicker.setPower(0);
+        shooter.pushKicker();
+        sleep(250);
+        shooter.retractKicker();
     }
 
     protected final Ruleta.Slot pickNextScoreSlot(Ruleta r) {

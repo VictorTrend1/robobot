@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.systems.Tureta;
 @TeleOp(name = "TrackTest")
 public class TrackTest extends LinearOpMode {
 
-    private static final int LIMELIGHT_PIPELINE = 1;
+    private static final int LIMELIGHT_PIPELINE = 3;
 
     private static final double START_X = 0.0;
     private static final double START_Y = 0.0;
@@ -28,7 +28,6 @@ public class TrackTest extends LinearOpMode {
                 hardwareMap,
                 new Pose2d(new Vector2d(START_X, START_Y), Math.toRadians(START_HEADING_DEG))
         );
-
         Tureta tureta = new Tureta(hardwareMap);
 
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -37,11 +36,11 @@ public class TrackTest extends LinearOpMode {
         TargetTracker.Params ap = new TargetTracker.Params();
         ap.servoCenter = 0.5;
 
-        ap.servoLeft = 0.18;
-        ap.servoRight = 0.82;
+        ap.servoLeft = 0.3;
+        ap.servoRight = 0.7;
 
-        ap.servoMinLimit = 0.18;
-        ap.servoMaxLimit = 0.82;
+        ap.servoMinLimit = 0.3;
+        ap.servoMaxLimit = 0.7;
 
         ap.maxYawDeg = 110.0;
 
@@ -60,6 +59,8 @@ public class TrackTest extends LinearOpMode {
         limelight.start();
 
         while (opModeIsActive()) {
+
+
 
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
@@ -106,11 +107,13 @@ public class TrackTest extends LinearOpMode {
             );
 
             tureta.setPosition(servoCmd);
+            drive.updatePoseEstimate();
+            telemetry.addData("HasVision Count", hasVision ? "YES" : "NO");
 
             telemetry.addData("Mode", aimer.getMode());
             telemetry.addData("Locked", aimer.isLocked());
-            telemetry.addData("Pose X", "%.2f", pose.position.x);
-            telemetry.addData("Pose Y", "%.2f", pose.position.y);
+            telemetry.addData("Pose X", "%.2f", drive.pose.position.x);
+            telemetry.addData("Pose Y", "%.2f", drive.pose.position.y);
             telemetry.addData("HeadingDeg", "%.2f", Math.toDegrees(pose.heading.toDouble()));
             telemetry.addData("Vision", hasVision);
             telemetry.addData("tx", "%.2f", tx);

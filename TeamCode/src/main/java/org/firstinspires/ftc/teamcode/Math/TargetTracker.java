@@ -13,28 +13,28 @@ public final class TargetTracker {
 
         public double maxYawDeg = 110.0;
 
-        public double txTolDeg = 0.6;
-        public int lockFrames = 8;
-        public double txAlpha = 0.25;
+        public double txTolDeg = 0.2;
+        public int lockFrames = 2;
+        public double txAlpha = 0.05;
 
-        public double visionLatencySec = 0.06;
+        public double visionLatencySec = 0.03;
 
         public double snapMaxServoSpeed = 2.2;
-        public double trackMaxServoSpeed = 1.2;
+        public double trackMaxServoSpeed = 1.8;
 
-        public double corrMax = 0.10;
+        public double corrMax = 0.40;
 
-        public double kP = -1.0;
-        public double kD = -1.0;
+        public double kP = -1.3;
+        public double kD = -1.6;
 
         public double enableBiasLearning = 1.0; // 0 disables, 1 enables
-        public double headingBiasMaxDeg = 12.0;
+        public double headingBiasMaxDeg = 30.0;
         public double centerBiasMax = 0.08;
 
-        public double headingBiasGain = 0.020;
+        public double headingBiasGain = 0.055;
         public double centerBiasGain = 0.0015;
 
-        public double biasUpdateMaxStepDeg = 0.20;
+        public double biasUpdateMaxStepDeg = 0.30;
         public double biasUpdateMaxStepServo = 0.0020;
 
         public double biasUpdateTxWindowDeg = 4.0;

@@ -38,7 +38,7 @@ public class auto_red_far extends BaseAuto {
             plan = getAprilTagId(result);
         }
 
-        SHOOT_MIN_OK = 1680;
+        SHOOT_MIN_OK = 1600;
         drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
 
 
@@ -63,7 +63,7 @@ public class auto_red_far extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(0,0,0))
                         .afterTime(0, ()->{shooter.spinUpTo(1650);
-                            ruleta.setPoz(Ruleta.SAFE);
+                            ruleta.setPoz(Ruleta.SLOT_S1);
                             tureta.setPosition(0.235);
                             intake.start();
                         })
@@ -71,9 +71,9 @@ public class auto_red_far extends BaseAuto {
                         .build()
         );
         sleep(300);
+        intake.start();
         shootOnPlan(plan);
-        shootOnPlan(plan);
-        shooter.kicker.setPower(0);
+        intake.stop();
         shooter.stopFlywheel();
         //=============INTAKE================
         Actions.runBlocking(
@@ -83,7 +83,7 @@ public class auto_red_far extends BaseAuto {
                             shooter.stopFlywheel();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(27, -22), Math.toRadians(-89))
+                        .strafeToLinearHeading(new Vector2d(28, -22), Math.toRadians(-89))
                         .build()
         );
         Actions.runBlocking(
@@ -91,19 +91,19 @@ public class auto_red_far extends BaseAuto {
                         .afterTime(0, ()->{ new Thread (() -> {
                             intake.start();
                             ruleta.goTo(Ruleta.Slot.C1);
-                            sleep(300);
+                            sleep(200);
                             while(!sensors.ballPresent()){}
                             ruleta.goTo(Ruleta.Slot.C2);
-                            sleep(300);
+                            sleep(200);
                             while(!sensors.ballPresent()){}
                             ruleta.goTo(Ruleta.Slot.C3);
-                            sleep(300);
+                            sleep(200);
                             while(!sensors.ballPresent()){}
-                            ruleta.setPoz(Ruleta.SAFE);
+                            ruleta.setPoz(Ruleta.SLOT_S1);
                         }).start();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(26, -52), Math.toRadians(-90),slow_vel,slow_acc)
+                        .strafeToLinearHeading(new Vector2d(28, -50), Math.toRadians(-90),slow_vel,slow_acc)
 
                         .build()
         );
@@ -122,16 +122,22 @@ public class auto_red_far extends BaseAuto {
 //        ruleta.goTo(Ruleta.Slot.S1);
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
-                        .afterTime(0.1, ()->{shooter.spinUpTo(1650);
+                        .afterTime(0.1, ()->{shooter.spinUpTo(1600);
                             intake.stop();})
                         .strafeToLinearHeading(new Vector2d(9, -4), Math.toRadians(0))
                         .build()
         );
+        tureta.setPosition(0.24);
         intake.start();
         sleep(200);
         shootOnPlan(plan);
-        shootOnPlan(plan);
         intake.stop();
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
+                        .afterTime(0.1, ()->{intake.stop(); shooter.stopFlywheel();})
+                        .strafeToLinearHeading(new Vector2d(9, -20), Math.toRadians(0))
+                        .build()
+        );
         sleep(30000);
 
     }
