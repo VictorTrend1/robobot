@@ -40,6 +40,9 @@ public final class TargetTracker {
         public double biasUpdateTxWindowDeg = 4.0;
         public double biasUpdateOmegaMaxDegPerSec = 90.0;
         public double biasUpdateLimitMargin = 0.02;
+
+        public double targetX = 0.0;
+        public double targetY = 0.0;
     }
 
     public enum Mode {
@@ -66,9 +69,14 @@ public final class TargetTracker {
     private double leftBias = 0.0;
     private double rightBias = 0.0;
 
+    private double targetX;
+    private double targetY;
+
     public TargetTracker(Params params) {
         this.p = params;
         this.servoCmd = clamp(params.servoCenter, params.servoMinLimit, params.servoMaxLimit);
+        this.targetX = params.targetX;
+        this.targetY = params.targetY;
     }
 
     public Mode getMode() {
@@ -81,6 +89,20 @@ public final class TargetTracker {
 
     public double getServoCommand() {
         return servoCmd;
+    }
+
+    public void setTarget(double x, double y) {
+        this.targetX = x;
+        this.targetY = y;
+    }
+
+
+    public double getTargetX() {
+        return targetX;
+    }
+
+    public double getTargetY() {
+        return targetY;
     }
 
     public void reset() {
@@ -146,8 +168,11 @@ public final class TargetTracker {
             return servoCmd;
         }
 
-        double bearingRad = Math.atan2(-y, -x);
+        double dx = targetX - x;
+        double dy = targetY - y;
+        double bearingRad = Math.atan2(dy, dx);
         double yawDesRad = wrapRad(bearingRad - (headingRad + headingBiasRad));
+
         double yawDesDeg = Math.toDegrees(yawDesRad);
 
         double servoFF = yawToServo(yawDesDeg);

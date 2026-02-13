@@ -36,11 +36,15 @@ public class TrackTest extends LinearOpMode {
         TargetTracker.Params ap = new TargetTracker.Params();
         ap.servoCenter = 0.5;
 
-        ap.servoLeft = 0.3;
-        ap.servoRight = 0.7;
+        ap.servoLeft = 0.37;
+        ap.servoRight = 0.63;
 
-        ap.servoMinLimit = 0.3;
-        ap.servoMaxLimit = 0.7;
+        ap.servoMinLimit = 0.37;
+        ap.servoMaxLimit = 0.63;
+
+        ap.targetX = 137.23;
+        ap.targetY = 66.539;
+
 
         ap.maxYawDeg = 110.0;
 
@@ -98,8 +102,8 @@ public class TrackTest extends LinearOpMode {
             double tx = hasVision ? r.getTx() : 0.0;
 
             double servoCmd = aimer.update(
-                    pose.position.x,
-                    pose.position.y,
+                    drive.pose.position.x,
+                    drive.pose.position.y,
                     pose.heading.toDouble(),
                     hasVision,
                     tx,

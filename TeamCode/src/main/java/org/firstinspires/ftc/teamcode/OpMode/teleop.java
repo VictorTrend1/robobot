@@ -16,10 +16,12 @@ import org.firstinspires.ftc.teamcode.Auto.BaseAuto;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Math.TargetTracker;
 import org.firstinspires.ftc.teamcode.systems.Inaltime;
+import org.firstinspires.ftc.teamcode.systems.PoseStorage;
 import org.firstinspires.ftc.teamcode.systems.RampSensors;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Ruleta;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
+import org.firstinspires.ftc.teamcode.systems.TargetStorage;
 import org.firstinspires.ftc.teamcode.systems.Tureta;
 
 @TeleOp(name = "teleop")
@@ -29,7 +31,10 @@ public class teleop extends LinearOpMode {
     private Servo led;
 
     private static final Ruleta.Plan3 SCORE_PLAN = Ruleta.Plan3.PPP;
-    private static final int LIMELIGHT_PIPELINE = 3;
+
+    private volatile State currentState = State.INTAKE;
+    private volatile boolean shouldAim = false;
+
     HardwareMap hm;
 
     @Override
@@ -37,6 +42,7 @@ public class teleop extends LinearOpMode {
 
         drivetrainThread thread2Class = new drivetrainThread(telemetry, hardwareMap);
         Thread thread2 = new Thread(thread2Class);
+
 
         PhotonCore.ExperimentalParameters ph = new PhotonCore.ExperimentalParameters();
         ph.setMaximumParallelCommands(8);
@@ -47,26 +53,12 @@ public class teleop extends LinearOpMode {
             thread2.join();
         }
 
+
         boolean lastDpadDown = false;
 
         led = hardwareMap.get(Servo.class, "led");
 
         Ruleta ruleta = new Ruleta(hardwareMap);
-        Tureta tureta = new Tureta(hardwareMap);
-
-        Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(LIMELIGHT_PIPELINE);
-
-        TargetTracker.Params ap = new TargetTracker.Params();
-        ap.servoCenter = 0.5;
-        ap.servoLeft = 0.3;
-        ap.servoRight = 0.7;
-        ap.servoMinLimit = 0.3;
-        ap.servoMaxLimit = 0.7;
-        ap.maxYawDeg = 110.0;
-
-        TargetTracker aimer = new TargetTracker(ap);
-        tureta.setPosition(ap.servoCenter);
 
         Intake intake = new Intake(hardwareMap);
         intake.setRuleta(ruleta);
@@ -74,10 +66,6 @@ public class teleop extends LinearOpMode {
         Shooter shooter = new Shooter(hardwareMap);
         RampSensors sensors = new RampSensors(hardwareMap);
         Edge circleEdge = new Edge();
-
-        State state = State.INTAKE;
-
-        boolean goscorare = false;
 
         Edge rtEdge = new Edge();
         Edge ltEdge = new Edge();
@@ -88,46 +76,26 @@ public class teleop extends LinearOpMode {
         Ruleta.Slot currentCollectSlot = Ruleta.Slot.C1;
         int shotsDone = 0;
 
-        long lastNs = System.nanoTime();
-
         // INIT
         shooter.stopAll();
         intake.resetForIntake();
         sleep(300);
         ruleta.goTo(Ruleta.Slot.C1);
-
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
+        while(opModeInInit()){
+            telemetry.addData("pipeline: ", TargetStorage.pipeline);
+            telemetry.addData("Target x: ", TargetStorage.targetX);
+            telemetry.addData("Target y: ", TargetStorage.targetY);
+            telemetry.addData("x: ", PoseStorage.currentPose.position.x);
+            telemetry.addData("y: ", PoseStorage.currentPose.position.y);
+            telemetry.addData("Heading: ", PoseStorage.currentPose.heading);
+            telemetry.update();
+        }
 
         waitForStart();
-        tureta.goDefault();
-        limelight.start();
 
         thread2.start();
 
         while (opModeIsActive()) {
-
-            long nowNs = System.nanoTime();
-            double dt = (nowNs - lastNs) * 1e-9;
-            lastNs = nowNs;
-            if (dt < 0.008) dt = 0.008;
-            if (dt > 0.050) dt = 0.050;
-
-            drive.updatePoseEstimate();
-            Pose2d pose = drive.pose;
-
-            LLResult r = limelight.getLatestResult();
-            boolean hasVision = (r != null) && r.isValid();
-            double tx = hasVision ? r.getTx() : 0.0;
-
-            double servoCmd = aimer.update(
-                    pose.position.x,
-                    pose.position.y,
-                    pose.heading.toDouble(),
-                    hasVision,
-                    tx,
-                    dt
-            );
-            tureta.setPosition(servoCmd);
 
             if (gamepad1.right_trigger != 0) intake.start();
             else if (gamepad1.left_trigger != 0) intake.reverse();
@@ -156,7 +124,7 @@ public class teleop extends LinearOpMode {
             }
             lastDpadDown = dpadDown;
 
-            switch (state) {
+            switch (currentState) {
 
                 case INTAKE: {
 
@@ -174,6 +142,7 @@ public class teleop extends LinearOpMode {
 
                     if (intake.isReadyForScore()) {
                         ruleta.setPlan(SCORE_PLAN);
+                        thread2Class.setShouldAim(true);
 
                         ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
                         ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
@@ -185,18 +154,13 @@ public class teleop extends LinearOpMode {
                         sleep(250);
                         shootEdge.reset(false);
 
-                        aimer.requestAim();
-
-                        state = State.SCORE;
+                        currentState = State.SCORE;
                         telemetry.update();
                     }
 
                     telemetry.addData("STATE", "INTAKE");
                     telemetry.addData("Balls", intake.getBallsIntaked());
                     telemetry.addData("RPM: ", shooter.showRpm());
-                    telemetry.addData("AimMode", aimer.getMode());
-                    telemetry.addData("Locked", aimer.isLocked());
-                    telemetry.addData("Vision", hasVision);
                     telemetry.update();
                     break;
                 }
@@ -213,9 +177,9 @@ public class teleop extends LinearOpMode {
                     if (currentScoreSlot == null) {
                         currentScoreSlot = pickNextScoreSlot(ruleta);
                         if (currentScoreSlot == null) {
-                            aimer.cancel();
+
                             resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
-                            state = State.INTAKE;
+                            currentState = State.INTAKE;
                             break;
                         }
                     }
@@ -244,12 +208,10 @@ public class teleop extends LinearOpMode {
 
                         sleep(400);
                         intake.stop();
-                        goscorare = false;
 
-                        aimer.cancel();
-
+                        thread2Class.setShouldAim(false);
                         resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
-                        state = State.INTAKE;
+                        currentState = State.INTAKE;
                         shotsDone = 0;
                     }
 
@@ -260,10 +222,6 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("ShotsDone", shotsDone);
                     telemetry.addData("Ruleta", ruleta.debug());
                     telemetry.addData("RPM: ", shooter.showRpm());
-                    telemetry.addData("AimMode", aimer.getMode());
-                    telemetry.addData("Locked", aimer.isLocked());
-                    telemetry.addData("Vision", hasVision);
-                    telemetry.addData("X", drive.pose.position.x);
                     telemetry.update();
                     break;
                 }
@@ -326,32 +284,164 @@ public class teleop extends LinearOpMode {
             prev = value;
         }
     }
-
     public class drivetrainThread implements Runnable {
         Telemetry telemetry;
         HardwareMap hm;
         volatile boolean isRunning = true;
 
+        PinpointDrive drive;
+        Tureta tureta;
+        Limelight3A limelight;
+        TargetTracker aimer;
+        TargetTracker.Params ap;
+
+        // Tracking state
+        private volatile TargetTracker.Mode aimerMode;
+        private volatile boolean locked = false;
+        private volatile boolean hasVisionData = false;
+        private long lastNs;
+        private volatile boolean shouldAim = false;
+
+        private final double START_X = PoseStorage.currentPose.position.x;
+        private final double START_Y = PoseStorage.currentPose.position.y;
+        private static final double START_HEADING = 0.0;
+        private static final int LIMELIGHT_PIPELINE = 3;
+        public static final double TARGET_X = 128.34;
+        public static final double TARGET_Y = -66.539;
+
         public drivetrainThread(Telemetry telemetry, HardwareMap hm) {
             this.telemetry = telemetry;
             this.hm = hm;
+
+
+            drive = new PinpointDrive(hm, new Pose2d(new Vector2d(START_X, START_Y), Math.toRadians(START_HEADING)));
+
+
+            tureta = new Tureta(hm);
+
+
+            limelight = hm.get(Limelight3A.class, "limelight");
+            limelight.pipelineSwitch(LIMELIGHT_PIPELINE);
+
+
+            ap = new TargetTracker.Params();
+
+            ap.servoCenter = 0.5;
+
+            ap.servoLeft = 0.39;
+            ap.servoRight = 0.61;
+
+            ap.servoMinLimit = 0.37;
+            ap.servoMaxLimit = 0.63;
+
+            ap.targetX = 137.23;
+            ap.targetY = 66.539;
+
+            ap.corrMax = 0.80;
+            ap.kP = -2.2;
+
+            ap.trackMaxServoSpeed = 5.0;
+            ap.snapMaxServoSpeed = 6.0;
+
+            aimer = new TargetTracker(ap);
+            tureta.setPosition(ap.servoCenter);
+
+            lastNs = System.nanoTime();
         }
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
+
+        public void setShouldAim(boolean shouldAim) {
+            this.shouldAim = shouldAim;
+        }
+
+        public void stop() {
+            isRunning = false;
+        }
+
+        public TargetTracker.Mode getAimerMode() {
+            return aimerMode;
+        }
+
+        public boolean isLocked() {
+            return locked;
+        }
+
+        public boolean hasVision() {
+            return hasVisionData;
+        }
+
+        public double getPoseX() {
+            return drive.pose.position.x;
+        }
+
+        public double getTargetX(){
+            return TARGET_X;
+        }
+        public double getTargetY(){
+            return TARGET_Y;
+        }
+
 
         @Override
         public void run() {
 
-            waitForStart();
-            while (!Thread.currentThread().isInterrupted()) {
-                if (isRunning) {
-                    drive.setDrivePowers(new PoseVelocity2d(
-                            new Vector2d(
-                                    -gamepad1.left_stick_y,
-                                    -gamepad1.left_stick_x
-                            ),
-                            -gamepad1.right_stick_x
-                    ));
+            while (!opModeIsActive() && !Thread.currentThread().isInterrupted()) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
+            }
+            aimer.setTarget(TARGET_X,TARGET_Y);
+            limelight.start();
+            tureta.goDefault();
+
+            boolean wasAiming = false;
+
+            while (!Thread.currentThread().isInterrupted() && isRunning && opModeIsActive()) {
+                long nowNs = System.nanoTime();
+                double dt = (nowNs - lastNs) * 1e-9;
+                lastNs = nowNs;
+                if (dt < 0.008) dt = 0.008;
+                if (dt > 0.050) dt = 0.050;
+
+                drive.updatePoseEstimate();
+                Pose2d pose = drive.pose;
+
+                drive.setDrivePowers(new PoseVelocity2d(
+                        new Vector2d(
+                                -gamepad1.left_stick_y,
+                                -gamepad1.left_stick_x
+                        ),
+                        -gamepad1.right_stick_x
+                ));
+
+                LLResult r = limelight.getLatestResult();
+                hasVisionData = (r != null) && r.isValid();
+                double tx = hasVisionData ? r.getTx() : 0.0;
+
+
+                if (shouldAim && !wasAiming) {
+                    aimer.requestAim();
+                    wasAiming = true;
+                } else if (!shouldAim && wasAiming) {
+                    aimer.cancel();
+                    wasAiming = false;
+                }
+
+                double servoCmd = aimer.update(
+                        pose.position.x,
+                        pose.position.y,
+                        pose.heading.toDouble(),
+                        hasVisionData,
+                        tx,
+                        dt
+                );
+                tureta.setPosition(servoCmd);
+
+                aimerMode = aimer.getMode();
+                locked = aimer.isLocked();
+
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {
