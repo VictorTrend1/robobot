@@ -141,6 +141,15 @@ public final class TargetTracker {
     ) {
         if (dtSec <= 1e-6) dtSec = 1e-6;
 
+        if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(headingRad)) {
+            return 0.5;
+        }
+
+        if (Double.isNaN(txDeg)) {
+            txDeg = 0.0;
+        }
+        /// A murit thread-u de 3 ori fara asta , servo isi ia pozitia NaN
+
         if (p.kP < 0 || p.kD < 0) autoTuneGains();
 
         double headingDeg = Math.toDegrees(headingRad);

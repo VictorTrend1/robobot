@@ -106,7 +106,7 @@ public abstract class BaseAuto extends LinearOpMode {
             }
             sleep(200);
             kick();
-            sleep(150);
+            sleep(200);
             ruleta.popScoredBall(slot);
             shotsDone++;
         }

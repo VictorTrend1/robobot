@@ -71,10 +71,12 @@ public class teleop extends LinearOpMode {
         Edge ltEdge = new Edge();
         Edge ballEdge = new Edge();
         Edge shootEdge = new Edge();
+        Edge triangleEdge = new Edge();
 
         Ruleta.Slot currentScoreSlot = null;
         Ruleta.Slot currentCollectSlot = Ruleta.Slot.C1;
         int shotsDone = 0;
+        boolean aimToggle = false;
 
         // INIT
         shooter.stopAll();
@@ -142,8 +144,6 @@ public class teleop extends LinearOpMode {
 
                     if (intake.isReadyForScore()) {
                         ruleta.setPlan(SCORE_PLAN);
-                        thread2Class.setShouldAim(true);
-
                         ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
                         ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
                         ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
@@ -188,8 +188,14 @@ public class teleop extends LinearOpMode {
                     ruleta.goTo(currentScoreSlot);
 
                     //shoot
-                    boolean shootPressed = gamepad1.cross;
 
+                    boolean trianglePressed = gamepad1.triangle;
+                    if (triangleEdge.rising(trianglePressed)) {
+                        aimToggle = !aimToggle;
+                        thread2Class.setShouldAim(aimToggle);
+                    }
+
+                    boolean shootPressed = gamepad1.cross;
                     if (shootEdge.rising(shootPressed)) {
                         intake.start();
                         for (int i = 0; i < 3 && currentScoreSlot != null; i++) {
@@ -214,14 +220,13 @@ public class teleop extends LinearOpMode {
                         currentState = State.INTAKE;
                         shotsDone = 0;
                     }
-
                     telemetry.addData("STATE", "SCORE");
                     telemetry.addData("Vel", shooter.getVelocity());
                     telemetry.addData("AtSpeed", shooter.atSpeed());
                     telemetry.addData("TargetSlot", currentScoreSlot);
                     telemetry.addData("ShotsDone", shotsDone);
                     telemetry.addData("Ruleta", ruleta.debug());
-                    telemetry.addData("RPM: ", shooter.showRpm());
+                    telemetry.addData("Locked", thread2Class.isLocked());
                     telemetry.update();
                     break;
                 }
@@ -305,9 +310,9 @@ public class teleop extends LinearOpMode {
         private final double START_X = PoseStorage.currentPose.position.x;
         private final double START_Y = PoseStorage.currentPose.position.y;
         private static final double START_HEADING = 0.0;
-        private static final int LIMELIGHT_PIPELINE = 3;
-        public static final double TARGET_X = 128.34;
-        public static final double TARGET_Y = -66.539;
+        private static final int LIMELIGHT_PIPELINE = 2;
+        public static final double TARGET_X = 138.34;
+        public static final double TARGET_Y = -66.759;
 
         public drivetrainThread(Telemetry telemetry, HardwareMap hm) {
             this.telemetry = telemetry;
@@ -328,17 +333,13 @@ public class teleop extends LinearOpMode {
 
             ap.servoCenter = 0.5;
 
-            ap.servoLeft = 0.39;
-            ap.servoRight = 0.61;
+            ap.servoLeft = 0.36;
+            ap.servoRight = 0.64;
 
-            ap.servoMinLimit = 0.37;
-            ap.servoMaxLimit = 0.63;
+            ap.servoMinLimit = 0.34;
+            ap.servoMaxLimit = 0.66;
 
-            ap.targetX = 137.23;
-            ap.targetY = 66.539;
 
-            ap.corrMax = 0.80;
-            ap.kP = -2.2;
 
             ap.trackMaxServoSpeed = 5.0;
             ap.snapMaxServoSpeed = 6.0;
@@ -418,7 +419,7 @@ public class teleop extends LinearOpMode {
 
                 LLResult r = limelight.getLatestResult();
                 hasVisionData = (r != null) && r.isValid();
-                double tx = hasVisionData ? r.getTx() : 0.0;
+                double tx = hasVisionData ? -r.getTx() : 0.0;
 
 
                 if (shouldAim && !wasAiming) {

@@ -34,19 +34,21 @@ public class TrackTest extends LinearOpMode {
         limelight.pipelineSwitch(LIMELIGHT_PIPELINE);
 
         TargetTracker.Params ap = new TargetTracker.Params();
+
         ap.servoCenter = 0.5;
 
-        ap.servoLeft = 0.37;
-        ap.servoRight = 0.63;
+        ap.servoLeft = 0.36;
+        ap.servoRight = 0.64;
 
-        ap.servoMinLimit = 0.37;
-        ap.servoMaxLimit = 0.63;
-
-        ap.targetX = 137.23;
-        ap.targetY = 66.539;
+        ap.servoMinLimit = 0.34;
+        ap.servoMaxLimit = 0.66;
 
 
-        ap.maxYawDeg = 110.0;
+        ap.corrMax = 0.90;
+
+
+
+
 
         TargetTracker aimer = new TargetTracker(ap);
         tureta.setPosition(ap.servoCenter);
@@ -61,6 +63,7 @@ public class TrackTest extends LinearOpMode {
         if (isStopRequested()) return;
 
         limelight.start();
+        aimer.setTarget(137.23,-66.539);
 
         while (opModeIsActive()) {
 
@@ -83,7 +86,6 @@ public class TrackTest extends LinearOpMode {
             boolean a = gamepad1.a;
             boolean b = gamepad1.b;
             boolean x = gamepad1.x;
-
             if (a && !lastA) aimer.requestAim();
             if (b && !lastB) aimer.cancel();
             if (x && !lastX) {

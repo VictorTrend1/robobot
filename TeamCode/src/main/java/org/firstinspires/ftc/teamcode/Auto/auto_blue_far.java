@@ -38,7 +38,7 @@ public class auto_blue_far extends BaseAuto {
             plan = getAprilTagId(result);
         }
 
-        SHOOT_MIN_OK = 1650;
+        SHOOT_MIN_OK = 1600;
         drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
 
 
@@ -57,22 +57,21 @@ public class auto_blue_far extends BaseAuto {
                 new TranslationalVelConstraint(20),
                 new AngularVelConstraint(Math.PI/2)
         ));
-        AccelConstraint slow_acc = new ProfileAccelConstraint(-20, 30);
+        AccelConstraint slow_acc = new ProfileAccelConstraint(-5, 10);
 
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(0,0,0))
-                        .afterTime(0, ()->{shooter.spinUpTo(1670);
+                        .afterTime(0, ()->{shooter.spinUpTo(1650);
                             ruleta.setPoz(Ruleta.SAFE);
                             ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(0.36);
+                            tureta.setPosition(0.535);
                         })
                         .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
         );
         sleep(300);
         intake.start();
-        shootOnPlan(plan);
         shootOnPlan(plan);
         shooter.stopFlywheel();
         intake.stop();
@@ -111,12 +110,12 @@ public class auto_blue_far extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
                         .afterTime(0.1, ()->{
-                            shooter.spinUpTo(1680);
+                            shooter.spinUpTo(1650);
                             intake.stop();})
                         .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
         );
-        tureta.setPosition(0.34);
+        tureta.setPosition(0.535);
         intake.start();
         sleep(200);
         shootOnPlan(plan);
@@ -126,6 +125,7 @@ public class auto_blue_far extends BaseAuto {
                         .strafeToLinearHeading(new Vector2d(9, 22), Math.toRadians(0))
                         .build()
         );
+        shooter.stopFlywheel();
         sleep(30000);
 
     }
