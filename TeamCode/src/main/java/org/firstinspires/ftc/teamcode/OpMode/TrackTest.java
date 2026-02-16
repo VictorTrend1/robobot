@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.systems.Tureta;
 @TeleOp(name = "TrackTest")
 public class TrackTest extends LinearOpMode {
 
-    private static final int LIMELIGHT_PIPELINE = 3;
+    private static final int LIMELIGHT_PIPELINE = 2;
 
     private static final double START_X = 0.0;
     private static final double START_Y = 0.0;
@@ -44,11 +44,13 @@ public class TrackTest extends LinearOpMode {
         ap.servoMaxLimit = 0.66;
 
 
-        ap.corrMax = 0.90;
+        ap.corrMax = 1.50;
 
+        ap.kP = -2.0;
+        ap.kD = -2.5;
 
-
-
+        ap.trackMaxServoSpeed = 2.5;
+        ap.snapMaxServoSpeed = 3.0;
 
         TargetTracker aimer = new TargetTracker(ap);
         tureta.setPosition(ap.servoCenter);
@@ -63,7 +65,7 @@ public class TrackTest extends LinearOpMode {
         if (isStopRequested()) return;
 
         limelight.start();
-        aimer.setTarget(137.23,-66.539);
+        aimer.setTarget(124.87,-59.00);
 
         while (opModeIsActive()) {
 

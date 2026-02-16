@@ -65,6 +65,7 @@ public class auto_blue_close extends BaseAuto {
         shootOnPlan(plan);
         intake.stop();
         shooter.stopFlywheel();
+        ruleta.goTo(Ruleta.Slot.C1);
         //=============INTAKE================
 
         Actions.runBlocking(
@@ -115,6 +116,8 @@ public class auto_blue_close extends BaseAuto {
 //                        .build()
 //        );
         shooter.stopFlywheel();
+        ruleta.goTo(Ruleta.Slot.C1);
+
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))

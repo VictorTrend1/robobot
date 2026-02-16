@@ -4,18 +4,14 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Auto.BaseAuto;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
-import org.firstinspires.ftc.teamcode.Math.TargetTracker;
-import org.firstinspires.ftc.teamcode.systems.Inaltime;
+import org.firstinspires.ftc.teamcode.Math.TuretaAutoAim;
 import org.firstinspires.ftc.teamcode.systems.PoseStorage;
 import org.firstinspires.ftc.teamcode.systems.RampSensors;
 import org.firstinspires.ftc.teamcode.systems.Intake;
@@ -40,7 +36,8 @@ public class teleop extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        drivetrainThread thread2Class = new drivetrainThread(telemetry, hardwareMap);
+        Shooter shooter = new Shooter(hardwareMap);
+        drivetrainThread thread2Class = new drivetrainThread(telemetry, hardwareMap,shooter);
         Thread thread2 = new Thread(thread2Class);
 
 
@@ -63,7 +60,6 @@ public class teleop extends LinearOpMode {
         Intake intake = new Intake(hardwareMap);
         intake.setRuleta(ruleta);
 
-        Shooter shooter = new Shooter(hardwareMap);
         RampSensors sensors = new RampSensors(hardwareMap);
         Edge circleEdge = new Edge();
 
@@ -143,6 +139,7 @@ public class teleop extends LinearOpMode {
                     }
 
                     if (intake.isReadyForScore()) {
+                        thread2Class.setShouldAim(true);
                         ruleta.setPlan(SCORE_PLAN);
                         ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
                         ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
@@ -173,6 +170,9 @@ public class teleop extends LinearOpMode {
                     } else {
                         led.setPosition(0);
                     }
+                    sleep(200);
+                    currentScoreSlot = Ruleta.Slot.S1;
+                    ruleta.goTo(currentScoreSlot);
 
                     if (currentScoreSlot == null) {
                         currentScoreSlot = pickNextScoreSlot(ruleta);
@@ -180,20 +180,15 @@ public class teleop extends LinearOpMode {
 
                             resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
                             currentState = State.INTAKE;
+                            shouldAim = false;
+                            thread2Class.setShouldAim(false);
+                            thread2Class.setShouldAim(false);
                             break;
                         }
                     }
-                    sleep(200);
-                    currentScoreSlot = Ruleta.Slot.S1;
-                    ruleta.goTo(currentScoreSlot);
 
                     //shoot
 
-                    boolean trianglePressed = gamepad1.triangle;
-                    if (triangleEdge.rising(trianglePressed)) {
-                        aimToggle = !aimToggle;
-                        thread2Class.setShouldAim(aimToggle);
-                    }
 
                     boolean shootPressed = gamepad1.cross;
                     if (shootEdge.rising(shootPressed)) {
@@ -289,159 +284,72 @@ public class teleop extends LinearOpMode {
             prev = value;
         }
     }
+
     public class drivetrainThread implements Runnable {
         Telemetry telemetry;
         HardwareMap hm;
         volatile boolean isRunning = true;
+        volatile boolean shouldAim = false;
+        private TuretaAutoAim autoAim;
+        private double TargetX = 124.87;
+        private double TargetY = -62.00;
+        private Shooter shooter;
 
-        PinpointDrive drive;
-        Tureta tureta;
-        Limelight3A limelight;
-        TargetTracker aimer;
-        TargetTracker.Params ap;
-
-        // Tracking state
-        private volatile TargetTracker.Mode aimerMode;
-        private volatile boolean locked = false;
-        private volatile boolean hasVisionData = false;
-        private long lastNs;
-        private volatile boolean shouldAim = false;
-
-        private final double START_X = PoseStorage.currentPose.position.x;
-        private final double START_Y = PoseStorage.currentPose.position.y;
-        private static final double START_HEADING = 0.0;
-        private static final int LIMELIGHT_PIPELINE = 2;
-        public static final double TARGET_X = 138.34;
-        public static final double TARGET_Y = -66.759;
-
-        public drivetrainThread(Telemetry telemetry, HardwareMap hm) {
+        private Tureta tureta = new Tureta(hardwareMap);
+        public drivetrainThread(Telemetry telemetry, HardwareMap hm, Shooter shooter) {
             this.telemetry = telemetry;
             this.hm = hm;
-
-
-            drive = new PinpointDrive(hm, new Pose2d(new Vector2d(START_X, START_Y), Math.toRadians(START_HEADING)));
-
-
-            tureta = new Tureta(hm);
-
-
-            limelight = hm.get(Limelight3A.class, "limelight");
-            limelight.pipelineSwitch(LIMELIGHT_PIPELINE);
-
-
-            ap = new TargetTracker.Params();
-
-            ap.servoCenter = 0.5;
-
-            ap.servoLeft = 0.36;
-            ap.servoRight = 0.64;
-
-            ap.servoMinLimit = 0.34;
-            ap.servoMaxLimit = 0.66;
-
-
-
-            ap.trackMaxServoSpeed = 5.0;
-            ap.snapMaxServoSpeed = 6.0;
-
-            aimer = new TargetTracker(ap);
-            tureta.setPosition(ap.servoCenter);
-
-            lastNs = System.nanoTime();
+            this.shooter = shooter;
         }
 
-        public void setShouldAim(boolean shouldAim) {
-            this.shouldAim = shouldAim;
-        }
 
-        public void stop() {
-            isRunning = false;
-        }
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
 
-        public TargetTracker.Mode getAimerMode() {
-            return aimerMode;
+        public void setShouldAim(boolean aim) {
+            this.shouldAim = aim;
         }
 
         public boolean isLocked() {
-            return locked;
+            if (autoAim == null) return false;
+            return autoAim.isAimed(0.4);
         }
-
-        public boolean hasVision() {
-            return hasVisionData;
-        }
-
-        public double getPoseX() {
-            return drive.pose.position.x;
-        }
-
-        public double getTargetX(){
-            return TARGET_X;
-        }
-        public double getTargetY(){
-            return TARGET_Y;
-        }
-
 
         @Override
         public void run() {
 
-            while (!opModeIsActive() && !Thread.currentThread().isInterrupted()) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
-            aimer.setTarget(TARGET_X,TARGET_Y);
-            limelight.start();
             tureta.goDefault();
+            autoAim = new TuretaAutoAim(hm, drive);
 
-            boolean wasAiming = false;
+            autoAim.setTarget(TargetX, TargetY);
 
-            while (!Thread.currentThread().isInterrupted() && isRunning && opModeIsActive()) {
-                long nowNs = System.nanoTime();
-                double dt = (nowNs - lastNs) * 1e-9;
-                lastNs = nowNs;
-                if (dt < 0.008) dt = 0.008;
-                if (dt > 0.050) dt = 0.050;
+            waitForStart();
 
-                drive.updatePoseEstimate();
-                Pose2d pose = drive.pose;
+            while (!Thread.currentThread().isInterrupted()) {
+                if(isRunning) {
+                    drive.updatePoseEstimate();
+                    double currentX = drive.pose.position.x;
+                    shooter.RPMPos(currentX);
 
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                -gamepad1.left_stick_y,
-                                -gamepad1.left_stick_x
-                        ),
-                        -gamepad1.right_stick_x
-                ));
+                    if (shouldAim) {
+                        autoAim.setTarget(TargetX, TargetY);
 
-                LLResult r = limelight.getLatestResult();
-                hasVisionData = (r != null) && r.isValid();
-                double tx = hasVisionData ? -r.getTx() : 0.0;
+                        boolean canAim = autoAim.aimToTarget();
 
+                        if (!canAim) {
+                            tureta.goDefault();
+                        }
+                    }else{
+                        tureta.goDefault();
+                    }
 
-                if (shouldAim && !wasAiming) {
-                    aimer.requestAim();
-                    wasAiming = true;
-                } else if (!shouldAim && wasAiming) {
-                    aimer.cancel();
-                    wasAiming = false;
+                    drive.setDrivePowers(new PoseVelocity2d(
+                            new Vector2d(
+                                    -gamepad1.left_stick_y,
+                                    -gamepad1.left_stick_x
+                            ),
+                            -gamepad1.right_stick_x
+                    ));
                 }
-
-                double servoCmd = aimer.update(
-                        pose.position.x,
-                        pose.position.y,
-                        pose.heading.toDouble(),
-                        hasVisionData,
-                        tx,
-                        dt
-                );
-                tureta.setPosition(servoCmd);
-
-                aimerMode = aimer.getMode();
-                locked = aimer.isLocked();
 
                 try {
                     Thread.sleep(20);

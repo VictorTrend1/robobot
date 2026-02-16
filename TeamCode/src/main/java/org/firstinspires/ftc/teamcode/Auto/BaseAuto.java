@@ -114,7 +114,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected final void kick() {
         shooter.pushKicker();
-        sleep(250);
+        sleep(150);
         shooter.retractKicker();
     }
 

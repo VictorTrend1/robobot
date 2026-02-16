@@ -15,7 +15,9 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
+import org.firstinspires.ftc.teamcode.systems.PoseStorage;
 import org.firstinspires.ftc.teamcode.systems.Ruleta;
+import org.firstinspires.ftc.teamcode.systems.TargetStorage;
 
 import java.util.Arrays;
 
@@ -57,7 +59,7 @@ public class auto_blue_far extends BaseAuto {
                 new TranslationalVelConstraint(20),
                 new AngularVelConstraint(Math.PI/2)
         ));
-        AccelConstraint slow_acc = new ProfileAccelConstraint(-5, 10);
+        AccelConstraint slow_acc = new ProfileAccelConstraint(-5, 5);
 
 
         Actions.runBlocking(
@@ -65,7 +67,7 @@ public class auto_blue_far extends BaseAuto {
                         .afterTime(0, ()->{shooter.spinUpTo(1650);
                             ruleta.setPoz(Ruleta.SAFE);
                             ruleta.goTo(Ruleta.Slot.S1);
-                            tureta.setPosition(0.535);
+                            tureta.setPosition(0.545);
                         })
                         .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
@@ -85,8 +87,7 @@ public class auto_blue_far extends BaseAuto {
                         })
                         .strafeToLinearHeading(new Vector2d(28, 22), Math.toRadians(89))
                         .build()
-        );
-        Actions.runBlocking(
+        );Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x,drive.pose.position.y,drive.pose.heading.toDouble()))
                         .afterTime(0, ()->{ new Thread (() -> {
                             intake.start();
@@ -99,7 +100,7 @@ public class auto_blue_far extends BaseAuto {
                             ruleta.goTo(Ruleta.Slot.C3);
                             sleep(200);
                             while(!sensors.ballPresent()){}
-                            ruleta.setPoz(Ruleta.SAFE);
+                            ruleta.setPoz(Ruleta.SLOT_S1);
                         }).start();
 
                         })
@@ -115,7 +116,7 @@ public class auto_blue_far extends BaseAuto {
                         .strafeToLinearHeading(new Vector2d(9, 4), Math.toRadians(0))
                         .build()
         );
-        tureta.setPosition(0.535);
+        tureta.setPosition(0.55);
         intake.start();
         sleep(200);
         shootOnPlan(plan);
@@ -125,7 +126,12 @@ public class auto_blue_far extends BaseAuto {
                         .strafeToLinearHeading(new Vector2d(9, 22), Math.toRadians(0))
                         .build()
         );
+        PoseStorage.currentPose = drive.pose;
+        TargetStorage.targetX = 138.34;
+        TargetStorage.targetY = 66.759;
+        TargetStorage.pipeline=3;
         shooter.stopFlywheel();
+
         sleep(30000);
 
     }

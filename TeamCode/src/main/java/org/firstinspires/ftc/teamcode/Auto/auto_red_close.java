@@ -17,7 +17,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.PinpointDrive;
+import org.firstinspires.ftc.teamcode.systems.PoseStorage;
 import org.firstinspires.ftc.teamcode.systems.Ruleta;
+import org.firstinspires.ftc.teamcode.systems.TargetStorage;
 
 import java.util.Arrays;
 
@@ -85,7 +87,7 @@ public class auto_red_close extends BaseAuto {
                         }).start();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(-26.74, -35.37),Math.toRadians(-45) ,slow_vel , slow_acc)
+                        .strafeToLinearHeading(new Vector2d(-25.74, -36.37),Math.toRadians(-45) ,slow_vel , slow_acc)
                         .build());
 
 
@@ -98,7 +100,7 @@ public class auto_red_close extends BaseAuto {
                         .strafeToLinearHeading(new Vector2d(-51.7,-8.3),Math.toRadians(-45))
                         .build()
         );
-        tureta.setPosition(0.6);
+        tureta.setPosition(0.615);
         intake.start();
         shootOnPlan(plan);
         intake.stop();
@@ -135,7 +137,7 @@ public class auto_red_close extends BaseAuto {
                         }).start();
 
                         })
-                        .strafeToLinearHeading(new Vector2d(-34.22, -69.8),Math.toRadians(-45) , slow_vel , slow_acc2)
+                        .strafeToLinearHeading(new Vector2d(-33.22, -68.8),Math.toRadians(-45) , slow_vel , slow_acc2)
                         .build());
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
@@ -143,11 +145,15 @@ public class auto_red_close extends BaseAuto {
                             intake.stop();
                             shooter.spinUpTo(1400);
                         })
-                        .strafeToLinearHeading(new Vector2d(-60.7,-11.3),Math.toRadians(-45))
+                        .strafeToLinearHeading(new Vector2d(-60.4,-10.3),Math.toRadians(-45))
                         .build()
         );
-        tureta.setPosition(0.6);
+        tureta.setPosition(0.62);
         intake.start();
+        PoseStorage.currentPose = drive.pose;
+        TargetStorage.targetX = 5.0;
+        TargetStorage.targetY = 0.0;
+        TargetStorage.pipeline=2;
         shootOnPlan(plan);
         intake.stop();
 //        Actions.runBlocking(

@@ -18,7 +18,7 @@ public abstract class AutoAim {
     protected long lastNs;
 
 
-    protected int pipeline = 3;
+    protected int pipeline = 2;
 
     protected double targetX = 0.0;
     protected double targetY = 0.0;
