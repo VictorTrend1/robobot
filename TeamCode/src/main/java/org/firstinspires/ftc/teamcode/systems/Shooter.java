@@ -53,55 +53,10 @@ public class Shooter {
     public void pushKicker() { kicker.setPosition(KICK_PUSH); }
     public void retractKicker() { kicker.setPosition(KICK_RETRACT); }
 
-    public void toggleRPM() {
-        if (TARGET_VEL == 1700) {
-            TARGET_VEL = 1400;
-            MIN_VEL = 1350;
-        } else {
-            TARGET_VEL = 1700;
-            MIN_VEL = 1650;
-        }
-    }
-    public String showRpm() {
-        if (TARGET_VEL == 1700) {
-            return "FAR";
-        } else if(TARGET_VEL == 1400 ){
-            return "CLOSE";
-        }else{
-            return "NULL";
-        }
-    }
 
     public void stopAll() {
         stopFlywheel();
        retractKicker();
-    }
-    public void RPMPos(double currentX) {
-        if (currentX < POZ_X) {
-            setRPMFar();
-        } else {
-            setRPMClose();
-        }
-    }
-
-    public void setRPMFar() {
-        if (TARGET_VEL != 1700) {
-            TARGET_VEL = 1700;
-            MIN_VEL = 1650;
-            if (flywheel.getVelocity() > 0) {
-                spinUp();
-            }
-        }
-    }
-
-    public void setRPMClose() {
-        if (TARGET_VEL != 1400) {
-            TARGET_VEL = 1400;
-            MIN_VEL = 1350;
-            if (flywheel.getVelocity() > 0) {
-                spinUp();
-            }
-        }
     }
     public void setRPMForDistance(double distanceInches) {
         double rpm = trajectory_Interpolation.rpmForDistance(distanceInches);
