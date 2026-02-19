@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.pow;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.Math.trajectory_Interpolation;
 
 public class Shooter {
 
@@ -17,7 +21,7 @@ public class Shooter {
     private  double MIN_VEL = 1680;
     private double KICK_PUSH = 0.14;
     private double KICK_RETRACT = 0.32;
-    private static final double POZ_X = 40.0;
+    private static final double POZ_X = -75.0;
 
 
     private static final PIDFCoefficients PIDF =
@@ -33,7 +37,7 @@ public class Shooter {
         flywheel2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
         stopAll();
     }
-    public void spinUpTo(int target_vel){flywheel.setVelocity(target_vel);
+    public void spinUpTo(double target_vel){flywheel.setVelocity(target_vel);
         flywheel2.setPower(flywheel.getPower());
     }
     public boolean atSpeedTo(int min_vel){
@@ -98,6 +102,11 @@ public class Shooter {
                 spinUp();
             }
         }
+    }
+    public void setRPMForDistance(double distanceInches) {
+        double rpm = trajectory_Interpolation.rpmForDistance(distanceInches);
+        flywheel.setVelocity(rpm);
+        flywheel2.setPower(flywheel.getPower());
     }
 
 }

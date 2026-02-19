@@ -79,6 +79,7 @@ public class teleop extends LinearOpMode {
         intake.resetForIntake();
         sleep(300);
         ruleta.goTo(Ruleta.Slot.C1);
+        thread2Class.setShouldAim(false);
         while(opModeInInit()){
             telemetry.addData("pipeline: ", TargetStorage.pipeline);
             telemetry.addData("Target x: ", TargetStorage.targetX);
@@ -94,7 +95,9 @@ public class teleop extends LinearOpMode {
         thread2.start();
 
         while (opModeIsActive()) {
-
+            if(gamepad1.dpad_right){
+                thread2Class.resetPos();
+            }
             if (gamepad1.right_trigger != 0) intake.start();
             else if (gamepad1.left_trigger != 0) intake.reverse();
             else intake.stop();
@@ -125,13 +128,12 @@ public class teleop extends LinearOpMode {
             switch (currentState) {
 
                 case INTAKE: {
-
+                    thread2Class.setShouldAim(false);
+                    shooter.stopAll();
                     boolean ballNow = sensors.ballPresent();
                     if (ballEdge.rising(ballNow)) {
-
                         boolean isGreen = !sensors.isPurple();
                         intake.onBallEntered(isGreen);
-
                         Ruleta.Slot next = ruleta.firstFreeCollectSlot();
                         if (next != null) {
                             ruleta.goTo(next);
@@ -146,7 +148,6 @@ public class teleop extends LinearOpMode {
                         ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
                         shooter.spinUp();
                         shotsDone = 0;
-                        currentScoreSlot = null;
                         shooter.retractKicker();
                         sleep(250);
                         shootEdge.reset(false);
@@ -182,7 +183,6 @@ public class teleop extends LinearOpMode {
                             currentState = State.INTAKE;
                             shouldAim = false;
                             thread2Class.setShouldAim(false);
-                            thread2Class.setShouldAim(false);
                             break;
                         }
                     }
@@ -195,7 +195,7 @@ public class teleop extends LinearOpMode {
                         intake.start();
                         for (int i = 0; i < 3 && currentScoreSlot != null; i++) {
                             shooter.pushKicker();
-                            sleep(350);
+                                sleep(350);
                             shooter.retractKicker();
                             ruleta.popScoredBall(currentScoreSlot);
                             shotsDone++;
@@ -209,9 +209,8 @@ public class teleop extends LinearOpMode {
 
                         sleep(400);
                         intake.stop();
-
-                        thread2Class.setShouldAim(false);
                         resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
+                        shooter.stopAll();
                         currentState = State.INTAKE;
                         shotsDone = 0;
                     }
@@ -221,6 +220,7 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("TargetSlot", currentScoreSlot);
                     telemetry.addData("ShotsDone", shotsDone);
                     telemetry.addData("Ruleta", ruleta.debug());
+                    telemetry.addData("X:" ,thread2Class.xpos());
                     telemetry.addData("Locked", thread2Class.isLocked());
                     telemetry.update();
                     break;
@@ -230,7 +230,6 @@ public class teleop extends LinearOpMode {
             sleep(20);
         }
 
-        shooter.stopAll();
         intake.stop();
     }
 
@@ -291,19 +290,18 @@ public class teleop extends LinearOpMode {
         volatile boolean isRunning = true;
         volatile boolean shouldAim = false;
         private TuretaAutoAim autoAim;
-        private double TargetX = 124.87;
-        private double TargetY = -62.00;
+        private double TargetX = 0.0;
+        private double TargetY = 0.0;
         private Shooter shooter;
 
-        private Tureta tureta = new Tureta(hardwareMap);
-        public drivetrainThread(Telemetry telemetry, HardwareMap hm, Shooter shooter) {
+        private Tureta tureta = new Tureta(hardwareMap);public drivetrainThread(Telemetry telemetry, HardwareMap hm, Shooter shooter) {
             this.telemetry = telemetry;
             this.hm = hm;
             this.shooter = shooter;
         }
 
 
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144,-60), Math.toRadians(0)));
 
         public void setShouldAim(boolean aim) {
             this.shouldAim = aim;
@@ -311,37 +309,40 @@ public class teleop extends LinearOpMode {
 
         public boolean isLocked() {
             if (autoAim == null) return false;
-            return autoAim.isAimed(0.4);
+            return autoAim.isAimed(2.5);
+        }
+        public double xpos(){
+            drive.updatePoseEstimate();
+            return drive.pose.position.x;
+        }
+        public void resetPos(){
+            drive.pinpoint.resetPosAndIMU();
+            drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144,0), Math.toRadians(0)));
         }
 
         @Override
         public void run() {
-
             tureta.goDefault();
             autoAim = new TuretaAutoAim(hm, drive);
 
             autoAim.setTarget(TargetX, TargetY);
+            shooter.stopAll();
 
             waitForStart();
 
             while (!Thread.currentThread().isInterrupted()) {
                 if(isRunning) {
-                    drive.updatePoseEstimate();
-                    double currentX = drive.pose.position.x;
-                    shooter.RPMPos(currentX);
-
                     if (shouldAim) {
-                        autoAim.setTarget(TargetX, TargetY);
-
-                        boolean canAim = autoAim.aimToTarget();
-
+                        drive.updatePoseEstimate();
+                        shooter.setRPMForDistance(autoAim.getDistance());
+                        boolean canAim = autoAim.aimToTarget(2.5);
                         if (!canAim) {
                             tureta.goDefault();
                         }
-                    }else{
+                    } else {
                         tureta.goDefault();
+                        shooter.stopAll();
                     }
-
                     drive.setDrivePowers(new PoseVelocity2d(
                             new Vector2d(
                                     -gamepad1.left_stick_y,
@@ -350,7 +351,6 @@ public class teleop extends LinearOpMode {
                             -gamepad1.right_stick_x
                     ));
                 }
-
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {

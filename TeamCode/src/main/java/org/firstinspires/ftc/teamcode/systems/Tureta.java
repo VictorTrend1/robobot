@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Tureta {
 
-    private static final double POS_MIN = 0.10;
-    private static final double POS_MAX = 0.50;
+    private static final double POS_MIN = 0.33;
+    private static final double POS_MAX = 0.64;
     private static final double POS_DEFAULT = 0.50;
 
     private final Servo s1;
@@ -47,4 +47,5 @@ public class Tureta {
         if (v >= POS_MAX) return POS_MAX-0.01;
         return v;
     }
+
 }

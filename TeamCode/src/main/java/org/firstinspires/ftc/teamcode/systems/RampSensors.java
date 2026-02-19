@@ -15,7 +15,7 @@ public class RampSensors {
 
     }
     public boolean ballPresent( ) {
-        return (senzorIntake1.getDistance(DistanceUnit.CM) <=3.0);
+        return (senzorIntake1.getDistance(DistanceUnit.CM) <=2.9);
     }
 
     public boolean isPurple( ) {

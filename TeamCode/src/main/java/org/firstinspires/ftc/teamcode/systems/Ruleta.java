@@ -10,12 +10,12 @@ import java.util.EnumMap;
 
 public class Ruleta {
 
-    public static final double SLOT_C1 = 0.00;
-    public static final double SLOT_C2 = 0.23;
-    public static final double SLOT_C3 = 0.45;
+    public static final double SLOT_C1 = 0.015;
+    public static final double SLOT_C2 = 0.24;
+    public static final double SLOT_C3 = 0.46;
 
-    public static final double SLOT_S1 = 0.344;
-    public static final double SLOT_S2 = 0.561;
+    public static final double SLOT_S1 = 0.34;
+    public static final double SLOT_S2 = 0.57;
     public static final double SLOT_S3 = 0.79;
     public static final double SAFE = 0.52;
     private static double lastpos = 0;
@@ -90,6 +90,12 @@ public class Ruleta {
         if (isEmpty(Slot.C1)) return Slot.C1;
         if (isEmpty(Slot.C2)) return Slot.C2;
         if (isEmpty(Slot.C3)) return Slot.C3;
+        return null;
+    }
+    public Slot lastFreeCollectSlot() {
+        if (isEmpty(Slot.C3)) return Slot.C3;
+        if (isEmpty(Slot.C2)) return Slot.C2;
+        if (isEmpty(Slot.C1)) return Slot.C1;
         return null;
     }
 
