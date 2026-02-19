@@ -120,9 +120,6 @@ public class teleop extends LinearOpMode {
             }
 
             boolean dpadDown = gamepad1.dpad_down;
-            if (dpadDown && !lastDpadDown) {
-                shooter.toggleRPM();
-            }
             lastDpadDown = dpadDown;
 
             switch (currentState) {
@@ -158,7 +155,6 @@ public class teleop extends LinearOpMode {
 
                     telemetry.addData("STATE", "INTAKE");
                     telemetry.addData("Balls", intake.getBallsIntaked());
-                    telemetry.addData("RPM: ", shooter.showRpm());
                     telemetry.update();
                     break;
                 }
