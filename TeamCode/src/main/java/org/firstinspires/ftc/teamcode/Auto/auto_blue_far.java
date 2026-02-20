@@ -133,7 +133,7 @@ public class auto_blue_far extends BaseAuto {
                             spinUpDynamic();
                             intake.stop();
                         })
-                        .strafeToLinearHeading(new Vector2d(-135, -56), Math.toRadians(0))
+                        .splineToLinearHeading(new Pose2d(-135, -56, Math.toRadians(0)), Math.toRadians(90))
                         .build()
         );
 
@@ -185,7 +185,8 @@ public class auto_blue_far extends BaseAuto {
                             spinUpDynamic();
                             intake.stop();
                         })
-                        .strafeToLinearHeading(new Vector2d(-135, -56), Math.toRadians(0))
+                       // .strafeToLinearHeading(new Vector2d(-135, -56), Math.toRadians(0))
+                        .splineToLinearHeading(new Pose2d(-135, -56, Math.toRadians(0)), Math.toRadians(90))
                         .build()
         );
         tureta.setPosition(0.63);
