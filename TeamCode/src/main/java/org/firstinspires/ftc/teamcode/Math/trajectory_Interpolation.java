@@ -9,19 +9,18 @@ public final class trajectory_Interpolation {
 
     public static final double DIST_BIAS = 0.0;
 
-    public static final double D1 = 31.4961;
-    public static final double D2 = 39.3701;
-    public static final double D3 = 78.7402;
-    public static final double D4 = 118.11;
-    public static final double D5 = 156.0;
-    public static final double D6 = 250.00;
+    public static final double D1 = 72;
+    public static final double D2 = 103;
+    public static final double D3 = 136;
+    public static final double D4 = 156;
+    public static final double D5 = 165;
 
-    public static final double RPM1 = 1350.0;
-    public static final double RPM2 = 1200.0;
-    public static final double RPM3 = 1100.0;
-    public static final double RPM4 = 1150.0;
-    public static final double RPM5 = 1250.0;
-    public static final double RPM6 = 1450.0;
+    public static final double RPM1 = 1550;
+    public static final double RPM2 = 1450;
+    public static final double RPM3 = 1550;
+    public static final double RPM4 = 1600;
+    public static final double RPM5 = 1625;
+
 
 
     private static final double K_RPM_PER_MPS = fitK();
@@ -48,13 +47,13 @@ public final class trajectory_Interpolation {
     }
 
     private static double fitK() {
-        double[] ds = {D1, D2, D3, D4 ,D5,D6};
-        double[] rs = {RPM1, RPM2, RPM3, RPM4,RPM5,RPM6};
+        double[] ds = {D1, D2, D3, D4 ,D5};
+        double[] rs = {RPM1, RPM2, RPM3, RPM4,RPM5};
 
         double num = 0.0;
         double den = 0.0;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < ds.length; i++) {
             double v = requiredExitSpeed(ds[i] + DIST_BIAS);
             if (v > 1e-9) {
                 num += rs[i] * v;

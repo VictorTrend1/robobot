@@ -217,6 +217,7 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("ShotsDone", shotsDone);
                     telemetry.addData("Ruleta", ruleta.debug());
                     telemetry.addData("X:" ,thread2Class.xpos());
+                    telemetry.addData("Distance: ", thread2Class.getDistance());
                     telemetry.addData("Locked", thread2Class.isLocked());
                     telemetry.update();
                     break;
@@ -305,7 +306,7 @@ public class teleop extends LinearOpMode {
 
         public boolean isLocked() {
             if (autoAim == null) return false;
-            return autoAim.isAimed(2.5);
+            return autoAim.isAimed(2);
         }
         public double xpos(){
             drive.updatePoseEstimate();
@@ -314,6 +315,9 @@ public class teleop extends LinearOpMode {
         public void resetPos(){
             drive.pinpoint.resetPosAndIMU();
             drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144,0), Math.toRadians(0)));
+        }
+        public double getDistance(){
+            return autoAim.getDistance();
         }
 
         @Override
@@ -331,7 +335,7 @@ public class teleop extends LinearOpMode {
                     if (shouldAim) {
                         drive.updatePoseEstimate();
                         shooter.setRPMForDistance(autoAim.getDistance());
-                        boolean canAim = autoAim.aimToTarget(2.5);
+                        boolean canAim = autoAim.aimToTarget(2);
                         if (!canAim) {
                             tureta.goDefault();
                         }

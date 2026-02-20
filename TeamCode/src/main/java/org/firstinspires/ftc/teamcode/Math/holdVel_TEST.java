@@ -20,16 +20,16 @@ public class holdVel_TEST extends LinearOpMode {
     public static String MOTOR2 = "shooter2";
     public static String  VOLTAGE_NAME = "Control Hub";
 
-    public static double  KP = 0.085;
-    public static double  KI = 0.0000010;
-    public static double  KD = 0.00003;
+    public static double  KP = 0.0000287;
+    public static double  KI = 2e-7;
+    public static double  KD = 0.000012;
 
-    public static double  KS = 0.09;
-    public static double  KV = 0.00050; //original 0.1
+    public static double  KS = 0.006;
+    public static double  KV = 0.00038; //original 0.1
     public static double  KA = 0;
 
-    public static double  ALPHA    = 0.2;   // velocity filter ( adica 0..1)
-    public static double  SLEW     = 4;    // power UPS
+    public static double  ALPHA    = 0.0373;   // velocity filter ( adica 0..1)
+    public static double  SLEW     = 0.23;    // power UPS
     public static double  MAX_I    = 0.2;    // integral clamp
     public static double  MAX_PWR  = 1.0;    // powr clamp
 
@@ -66,40 +66,37 @@ public class holdVel_TEST extends LinearOpMode {
             telemetry.addData("RPM actual: ", shooter.flywheel.getVelocity());
             telemetry.addData("Target RPM:", TARGET_TPS);
             telemetry.update();
-//
-//            task.setTargetTps(TARGET_TPS);
-//
-//            double now = loop.seconds();
-//            double dt  = now - lastT;
-//            if (dt <= 0) dt = 1e-3;
-//
-//            task.step();
-//
-//
-//            double vel    = motor.getVelocity();        // TPS
-//            double power  = motor.getPower();           // pow
-//            double error  = TARGET_TPS - vel;
-//            double volts  = (battery != null) ? battery.getVoltage() : 0.0;
-//
-//            telemetry.addLine("=== Velocity Hold Tuning ===");
-//            telemetry.addData("Target (tps)", "%.0f", TARGET_TPS);
-//            telemetry.addData("Measured (tps)", "%.0f", vel);
-//            telemetry.addData("Error (tps)", "%.0f", error);
-//            telemetry.addData("Power", "%.3f", power);
-//            telemetry.addData("Battery (V)", (battery != null) ? "%.2f" : "N/A", volts);
-//
-//            telemetry.addLine("=== Gains / Limits ===");
-//            telemetry.addData("kP / kI / kD", "%.5f / %.5f / %.5f", KP, KI, KD);
-//            telemetry.addData("kS / kV / kA", "%.3f / %.6f / %.3f", KS, KV, KA);
-//            telemetry.addData("alpha / slew", "%.2f / %.2f", ALPHA, SLEW);
-//            telemetry.addData("maxI / maxPwr", "%.2f / %.2f", MAX_I, MAX_PWR);
-//
-//            telemetry.addLine("=== Loop ===");
-//            telemetry.addData("dt (ms)", "%.1f", dt * 1000.0);
-//            telemetry.update();
-//            telm.reset();
-//
-//            lastT = now;
+            task.updateGains(KP, KI, KD, KS, KV, KA, ALPHA, SLEW, MAX_I, MAX_PWR);
+            task.setTargetTps(TARGET_TPS);
+
+            double now = loop.seconds();
+            double dt  = now - lastT;
+            if (dt <= 0) dt = 1e-3;
+
+            task.step();
+
+
+            double power  = motor.getPower();           // pow
+            double volts  = (battery != null) ? battery.getVoltage() : 0.0;
+
+            telemetry.addLine("=== Velocity Hold Tuning ===");
+            telemetry.addData("Measured (tps)", "%.0f", (double) vel);
+            telemetry.addData("Error (tps)", "%.0f", (double) error);
+            telemetry.addData("Power", "%.3f", power);
+            telemetry.addData("Battery (V)", (battery != null) ? "%.2f" : "N/A", volts);
+
+            telemetry.addLine("=== Gains / Limits ===");
+            telemetry.addData("kP / kI / kD", "%.5f / %.5f / %.5f", KP, KI, KD);
+            telemetry.addData("kS / kV / kA", "%.3f / %.6f / %.3f", KS, KV, KA);
+            telemetry.addData("alpha / slew", "%.2f / %.2f", ALPHA, SLEW);
+            telemetry.addData("maxI / maxPwr", "%.2f / %.2f", MAX_I, MAX_PWR);
+
+            telemetry.addLine("=== Loop ===");
+            telemetry.addData("dt (ms)", "%.1f", dt * 1000.0);
+            telemetry.update();
+            telm.reset();
+
+            lastT = now;
         }
 
         task.stop();

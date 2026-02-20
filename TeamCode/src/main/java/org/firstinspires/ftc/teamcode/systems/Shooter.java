@@ -25,7 +25,7 @@ public class Shooter {
 
 
     private static final PIDFCoefficients PIDF =
-            new PIDFCoefficients(300, 0, 1, 12);
+            new PIDFCoefficients(350, 0, 1, 13);
 
     public Shooter(HardwareMap hw) {
         flywheel = hw.get(DcMotorEx.class, "shooter1");

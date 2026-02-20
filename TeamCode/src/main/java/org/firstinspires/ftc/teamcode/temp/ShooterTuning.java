@@ -52,6 +52,8 @@ public class ShooterTuning extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+            drive.updatePoseEstimate();
+            autoAim.getDistance();
             tureta.goDefault();
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(

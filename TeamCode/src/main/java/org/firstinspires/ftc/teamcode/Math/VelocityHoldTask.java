@@ -46,6 +46,16 @@ public class VelocityHoldTask {
         timer.reset();
         lastTime = timer.seconds();
     }
+    public void updateGains(double kP, double kI, double kD,
+                            double kS, double kV, double kA,
+                            double alpha, double slew, double maxI, double maxPwr) {
+        ctrl.kP = kP; ctrl.kI = kI; ctrl.kD = kD;
+        ctrl.kS = kS; ctrl.kV = kV; ctrl.kA = kA;
+        ctrl.alpha = alpha;
+        ctrl.slewRate = slew;
+        ctrl.maxI = maxI;
+        ctrl.maxPower = maxPwr;
+    }
 
     public void setTargetTps(double tps) { ctrl.setTargetTps(tps); }
     public double getTargetTps() { return ctrl.getTargetTps(); }
