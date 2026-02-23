@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Auto.auto_blue_close;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Math.TuretaAutoAim;
 import org.firstinspires.ftc.teamcode.systems.PoseStorage;
@@ -46,12 +47,11 @@ public class teleop extends LinearOpMode {
         ph.setSinglethreadedOptimized(false);
 
         if (thread2.isAlive()) {
+            sleep(100);
             thread2.interrupt();
             thread2.join();
         }
 
-
-        boolean lastDpadDown = false;
 
         led = hardwareMap.get(Servo.class, "led");
 
@@ -60,26 +60,28 @@ public class teleop extends LinearOpMode {
         Intake intake = new Intake(hardwareMap);
         intake.setRuleta(ruleta);
 
+
         RampSensors sensors = new RampSensors(hardwareMap);
-        Edge circleEdge = new Edge();
 
         Edge rtEdge = new Edge();
         Edge ltEdge = new Edge();
         Edge ballEdge = new Edge();
         Edge shootEdge = new Edge();
-        Edge triangleEdge = new Edge();
+        Edge dpadDownEdge = new Edge();
+        Edge dpadUpEdge = new Edge();
+
 
         Ruleta.Slot currentScoreSlot = null;
         Ruleta.Slot currentCollectSlot = Ruleta.Slot.C1;
         int shotsDone = 0;
-        boolean aimToggle = false;
+
+        boolean autoaim = true;
+
 
         // INIT
         shooter.stopAll();
         intake.resetForIntake();
-        sleep(300);
         ruleta.goTo(Ruleta.Slot.C1);
-        thread2Class.setShouldAim(false);
         while(opModeInInit()){
             telemetry.addData("pipeline: ", TargetStorage.pipeline);
             telemetry.addData("Target x: ", TargetStorage.targetX);
@@ -93,8 +95,18 @@ public class teleop extends LinearOpMode {
         waitForStart();
 
         thread2.start();
+        telemetry.addData("thread2 is alive", thread2.isAlive());
+        telemetry.update();
+        sleep(20);
 
         while (opModeIsActive()) {
+
+            boolean dpadDown = gamepad1.dpad_down;
+            if (dpadDownEdge.rising(dpadDown)) {
+                autoaim = !autoaim;
+            }
+
+
             if(gamepad1.dpad_right){
                 thread2Class.resetPos();
             }
@@ -119,8 +131,6 @@ public class teleop extends LinearOpMode {
                 shooter.stopFlywheel();
             }
 
-            boolean dpadDown = gamepad1.dpad_down;
-            lastDpadDown = dpadDown;
 
             switch (currentState) {
 
@@ -138,7 +148,6 @@ public class teleop extends LinearOpMode {
                     }
 
                     if (intake.isReadyForScore()) {
-                        thread2Class.setShouldAim(true);
                         ruleta.setPlan(SCORE_PLAN);
                         ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
                         ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
@@ -155,18 +164,20 @@ public class teleop extends LinearOpMode {
 
                     telemetry.addData("STATE", "INTAKE");
                     telemetry.addData("Balls", intake.getBallsIntaked());
+                    telemetry.addData("Autoaim: ", autoaim);
+
                     telemetry.update();
                     break;
                 }
 
                 case SCORE: {
                     telemetry.update();
-
-                    if (shooter.atSpeed()) {
-                        led.setPosition(1);
-                    } else {
-                        led.setPosition(0);
+                    if(autoaim){
+                        thread2Class.setShouldAim(true);}
+                    else{
+                        thread2Class.turetaDefaut();
                     }
+
                     sleep(200);
                     currentScoreSlot = Ruleta.Slot.S1;
                     ruleta.goTo(currentScoreSlot);
@@ -191,7 +202,7 @@ public class teleop extends LinearOpMode {
                         intake.start();
                         for (int i = 0; i < 3 && currentScoreSlot != null; i++) {
                             shooter.pushKicker();
-                                sleep(350);
+                            sleep(350);
                             shooter.retractKicker();
                             ruleta.popScoredBall(currentScoreSlot);
                             shotsDone++;
@@ -217,8 +228,10 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("ShotsDone", shotsDone);
                     telemetry.addData("Ruleta", ruleta.debug());
                     telemetry.addData("X:" ,thread2Class.xpos());
+                    telemetry.addData("y:" ,thread2Class.ypos());
                     telemetry.addData("Distance: ", thread2Class.getDistance());
                     telemetry.addData("Locked", thread2Class.isLocked());
+                    telemetry.addData("Autoaim: ", autoaim);
                     telemetry.update();
                     break;
                 }
@@ -226,9 +239,10 @@ public class teleop extends LinearOpMode {
 
             sleep(20);
         }
-
         intake.stop();
+        requestOpModeStop();
     }
+
 
     private Ruleta.Slot nextCollectSlot(Ruleta.Slot s) {
         if (s == Ruleta.Slot.C1) return Ruleta.Slot.C2;
@@ -287,9 +301,10 @@ public class teleop extends LinearOpMode {
         volatile boolean isRunning = true;
         volatile boolean shouldAim = false;
         private TuretaAutoAim autoAim;
-        private double TargetX = 0.0;
-        private double TargetY = 0.0;
+        private double TargetX = TargetStorage.targetX;
+        private double TargetY = TargetStorage.targetY;
         private Shooter shooter;
+
 
         private Tureta tureta = new Tureta(hardwareMap);public drivetrainThread(Telemetry telemetry, HardwareMap hm, Shooter shooter) {
             this.telemetry = telemetry;
@@ -298,7 +313,7 @@ public class teleop extends LinearOpMode {
         }
 
 
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144,-60), Math.toRadians(0)));
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(PoseStorage.currentPose.position.x,PoseStorage.currentPose.position.y), PoseStorage.currentPose.heading));
 
         public void setShouldAim(boolean aim) {
             this.shouldAim = aim;
@@ -306,42 +321,55 @@ public class teleop extends LinearOpMode {
 
         public boolean isLocked() {
             if (autoAim == null) return false;
-            return autoAim.isAimed(2);
+            return autoAim.isAimed(0.5);
         }
         public double xpos(){
             drive.updatePoseEstimate();
             return drive.pose.position.x;
         }
+        public double ypos(){
+            drive.updatePoseEstimate();
+            return drive.pose.position.y;
+        }
         public void resetPos(){
-            drive.pinpoint.resetPosAndIMU();
-            drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144,0), Math.toRadians(0)));
+            drive.pinpoint.setPosition(new Pose2d(new Vector2d(-130,0), Math.toRadians(0)));
+            drive.updatePoseEstimate();
         }
         public double getDistance(){
             return autoAim.getDistance();
         }
 
+        public void turetaDefaut(){
+            tureta.goDefault();
+        }
+
         @Override
         public void run() {
+
+            led = hardwareMap.get(Servo.class, "led");
+
             tureta.goDefault();
             autoAim = new TuretaAutoAim(hm, drive);
 
             autoAim.setTarget(TargetX, TargetY);
-            shooter.stopAll();
 
             waitForStart();
 
             while (!Thread.currentThread().isInterrupted()) {
+
                 if(isRunning) {
+
+                    drive.updatePoseEstimate();
+                    shooter.RPMPos(drive.pose.position.x);
+                    led.setPosition(0);
+
                     if (shouldAim) {
-                        drive.updatePoseEstimate();
-                        shooter.setRPMForDistance(autoAim.getDistance());
-                        boolean canAim = autoAim.aimToTarget(2);
+                        boolean canAim = autoAim.aimToTarget(0.3);
                         if (!canAim) {
                             tureta.goDefault();
                         }
                     } else {
                         tureta.goDefault();
-                        shooter.stopAll();
                     }
                     drive.setDrivePowers(new PoseVelocity2d(
                             new Vector2d(
@@ -358,6 +386,14 @@ public class teleop extends LinearOpMode {
                     break;
                 }
             }
+
+
+            Thread.currentThread().interrupt();
+            sleep(20);
+
+
+
         }
     }
+
 }

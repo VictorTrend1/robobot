@@ -50,7 +50,7 @@ public abstract class BaseAuto extends LinearOpMode {
     protected void onInit() {
         ruleta.goTo(Ruleta.Slot.S1);
         tureta.goDefault();
-        SHOOT_MIN_OK = 1650;
+        SHOOT_MIN_OK = 1675;
     }
 
     protected abstract void onRun();
@@ -91,19 +91,8 @@ public abstract class BaseAuto extends LinearOpMode {
         ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
         ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
     }
-    protected final void preparePreaload(Ruleta.Plan3 plan) {
-        ruleta.clear();
 
-        ruleta.onBallIntake(true);
-        ruleta.onBallIntake(false);
-        ruleta.onBallIntake(false);
 
-        ruleta.setPlan(plan);
-
-        ruleta.moveToScore(Ruleta.Slot.C1, Ruleta.Slot.S1);
-        ruleta.moveToScore(Ruleta.Slot.C2, Ruleta.Slot.S2);
-        ruleta.moveToScore(Ruleta.Slot.C3, Ruleta.Slot.S3);
-    }
 
     protected final void shootOnPlan(Ruleta.Plan3 plan) {
         preparePreloadGreenInS1PurpleInS2S3(plan);
@@ -122,33 +111,13 @@ public abstract class BaseAuto extends LinearOpMode {
 
             sleep(200);
             kick();
-            sleep(200);
-            ruleta.popScoredBall(slot);
-            shotsDone++;
-        }
-    }
-    protected final void shootOnPlan2(Ruleta.Plan3 plan) {
-        preparePreaload(plan);
-        sleep(250);
-
-        int shotsDone = 0;
-
-        while (opModeIsActive() && shotsDone < 3) {
-            Ruleta.Slot slot = pickNextScoreSlot(ruleta);
-            if (slot == null) break;
-
-            ruleta.goTo(slot);
             sleep(300);
-
-            while (opModeIsActive() && !shooter.atSpeedTo(SHOOT_MIN_OK)) {}
-
-            sleep(200);
-            kick();
-            sleep(200);
             ruleta.popScoredBall(slot);
             shotsDone++;
         }
     }
+
+
 
     protected final void kick() {
         shooter.pushKicker();

@@ -17,15 +17,15 @@ public class Shooter {
     public final DcMotorEx flywheel2;
     private final Servo kicker;
 
-    private  double TARGET_VEL = 1700;
-    private  double MIN_VEL = 1680;
+    private  double TARGET_VEL = 1660;
+    private  double MIN_VEL = 1600;
     private double KICK_PUSH = 0.14;
     private double KICK_RETRACT = 0.32;
-    private static final double POZ_X = -75.0;
+    private static final double POZ_X = -70.0;
 
 
     private static final PIDFCoefficients PIDF =
-            new PIDFCoefficients(350, 0, 1, 13);
+            new PIDFCoefficients(300, 0, 1, 12);
 
     public Shooter(HardwareMap hw) {
         flywheel = hw.get(DcMotorEx.class, "shooter1");
@@ -34,7 +34,7 @@ public class Shooter {
         flywheel2.setDirection(DcMotorEx.Direction.REVERSE);
         flywheel.setDirection(DcMotorEx.Direction.FORWARD);
         flywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
-        flywheel2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
+        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         stopAll();
     }
     public void spinUpTo(double target_vel){flywheel.setVelocity(target_vel);
@@ -58,6 +58,34 @@ public class Shooter {
         stopFlywheel();
        retractKicker();
     }
+
+    public void RPMPos(double currentX) {
+        if (currentX < POZ_X) {
+            setRPMFar();
+        } else {
+            setRPMClose();
+        }
+    }
+    public void setRPMFar() {
+        if (TARGET_VEL != 1660) {
+            TARGET_VEL = 1660;
+            MIN_VEL = 1600;
+            if (flywheel.getVelocity() > 0) {
+                spinUp();
+            }
+        }
+    }
+
+    public void setRPMClose() {
+        if (TARGET_VEL != 1420) {
+            TARGET_VEL = 1420;
+            MIN_VEL = 1380;
+            if (flywheel.getVelocity() > 0) {
+                spinUp();
+            }
+        }
+    }
+
     public void setRPMForDistance(double distanceInches) {
         double rpm = trajectory_Interpolation.rpmForDistance(distanceInches);
         flywheel.setVelocity(rpm);

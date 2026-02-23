@@ -39,7 +39,7 @@ public class auto_blue_far extends BaseAuto {
             plan = getAprilTagId(result);
         }
 
-        drive = new PinpointDrive(hardwareMap, new Pose2d(-144, -60, 0));
+        drive = new PinpointDrive(hardwareMap, new Pose2d(-130, -61, 0));
     }
 
     public double getDistance() {
@@ -60,71 +60,71 @@ public class auto_blue_far extends BaseAuto {
     @Override
     protected void onRun() {
         if (plan == null) {
-            plan = Ruleta.Plan3.PPG;
+            plan = Ruleta.Plan3.GPP;
         }
 
         telemetry.addData("plan", plan);
         telemetry.update();
 
         VelConstraint slow_vel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(170),
-                new AngularVelConstraint(3* Math.PI)
+                new TranslationalVelConstraint(100),
+                new AngularVelConstraint(Math.PI)
         ));
-        AccelConstraint slow_acc = new ProfileAccelConstraint(-5, 10);
+        AccelConstraint slow_acc = new ProfileAccelConstraint(-10, 10);
 
         Actions.runBlocking(
-                drive.actionBuilder(new Pose2d(-144, -60, 0))
+                drive.actionBuilder(new Pose2d(-130, -61, 0))
                         .afterTime(0, () -> {
                             spinUpDynamic();
                             ruleta.setPoz(Ruleta.SLOT_S1);
-                            tureta.setPosition(0.63);
                             intake.start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-135, -56), Math.toRadians(0))
+                        .strafeToLinearHeading(new Vector2d(-120, -54), Math.toRadians(0))
                         .build()
         );
         sleep(300);
         intake.start();
 
-        spinUpDynamic();
-        tureta.setPosition(0.63);
+        shooter.spinUpTo(1670);
+        tureta.setPosition(0.58);
         sleep(100);
         shootOnPlan(plan);
 
         intake.stop();
         shooter.stopFlywheel();
+        ruleta.goTo(Ruleta.Slot.C3);
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.toDouble()))
-                        .strafeToLinearHeading(new Vector2d(-116, -38), Math.toRadians(90))
+                        .strafeToLinearHeading(new Vector2d(-100, -38), Math.toRadians(90))
                         .afterTime(0, () -> {
                             new Thread(() -> {
                                 intake.start();
-                                ruleta.goTo(Ruleta.Slot.C1);
-                                sleep(70);
+                                ruleta.goTo(Ruleta.Slot.C3);
+                                sleep(100);
                                 while (!sensors.ballPresent()) {}
                                 ruleta.goTo(Ruleta.Slot.C2);
-                                sleep(70);
+                                sleep(100);
                                 while (!sensors.ballPresent()) {}
-                                ruleta.goTo(Ruleta.Slot.C3);
-                                sleep(70);
-                                while (!sensors.ballPresent()) {}
-                                ruleta.setPoz(Ruleta.SLOT_S1);
+                                ruleta.goTo(Ruleta.Slot.C1);
+                                sleep(100);
+
                             }).start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-116, -23), Math.toRadians(90), slow_vel, slow_acc)
+                        .strafeToLinearHeading(new Vector2d(-100, -20), Math.toRadians(90), slow_vel, slow_acc)
                         .afterTime(0.1, () -> {
-                            spinUpDynamic();
+                            ruleta.goTo(Ruleta.Slot.S1);
                             intake.stop();
                         })
-                        .splineToLinearHeading(new Pose2d(-135, -56, Math.toRadians(0)), Math.toRadians(90))
+                        .splineToLinearHeading(new Pose2d(-120, -54, Math.toRadians(0)), Math.toRadians(90))
 
                         .build()
         );
-        tureta.setPosition(0.63);
+        ruleta.goTo(Ruleta.Slot.S1);
+        tureta.setPosition(0.56);
         intake.start();
 
-        spinUpDynamic();
+        shooter.spinUpTo(1670);
         sleep(100);
         shootOnPlan(plan);
 
@@ -133,37 +133,38 @@ public class auto_blue_far extends BaseAuto {
 
         /// SPIKE 2
 
+        ruleta.goTo(Ruleta.Slot.C1);
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.toDouble()))
-                        .strafeToLinearHeading(new Vector2d(-92, -38), Math.toRadians(90))
+                        .strafeToLinearHeading(new Vector2d(-76 , -40.7), Math.toRadians(90))
                         .afterTime(0, () -> {
                             new Thread(() -> {
                                 intake.start();
                                 ruleta.goTo(Ruleta.Slot.C1);
-                                sleep(70);
-                                while (!sensors.ballPresent()) {}
-                                ruleta.goTo(Ruleta.Slot.C2);
-                                sleep(70);
+                                sleep(100);
                                 while (!sensors.ballPresent()) {}
                                 ruleta.goTo(Ruleta.Slot.C3);
-                                sleep(70);
+                                sleep(100);
                                 while (!sensors.ballPresent()) {}
-                                ruleta.setPoz(Ruleta.SLOT_S1);
+                                ruleta.goTo(Ruleta.Slot.C2);
+                                sleep(100);
                             }).start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-92, -23), Math.toRadians(90), slow_vel, slow_acc)
+                        .strafeToLinearHeading(new Vector2d(-76, -21), Math.toRadians(90), slow_vel, slow_acc)
                         .afterTime(0.1, () -> {
-                            spinUpDynamic();
+                            ruleta.goTo(Ruleta.Slot.S1);
+                            shooter.spinUp();
                             intake.stop();
                         })
-                        .splineToLinearHeading(new Pose2d(-135, -56, Math.toRadians(0)), Math.toRadians(90))
+                        .splineToLinearHeading(new Pose2d(-120, -54, Math.toRadians(0)), Math.toRadians(90))
                         .build()
         );
-        tureta.setPosition(0.61);
+        tureta.setPosition(0.59);
+
         intake.start();
 
-        spinUpDynamic();
+        shooter.spinUpTo(1670);
         sleep(100);
         shootOnPlan(plan);
 
@@ -176,7 +177,7 @@ public class auto_blue_far extends BaseAuto {
                             shooter.stopFlywheel();
                             ruleta.goTo(Ruleta.Slot.C1);
                         })
-                        .strafeToLinearHeading(new Vector2d(-135, -40), Math.toRadians(0))
+                        .strafeToLinearHeading(new Vector2d(-120, -41), Math.toRadians(0))
                         .build()
         );
 
