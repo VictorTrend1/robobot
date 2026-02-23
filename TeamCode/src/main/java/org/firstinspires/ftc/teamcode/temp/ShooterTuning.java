@@ -31,7 +31,7 @@ public class ShooterTuning extends LinearOpMode {
 
         Tureta tureta = new Tureta(hardwareMap);
 
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144, -60), Math.toRadians(0)));
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-144, -60), Math.toRadians(0)),true);
 
         TuretaAutoAim autoAim = new TuretaAutoAim(hardwareMap, drive);
 

@@ -4,8 +4,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Tureta;
 
@@ -14,7 +12,6 @@ public class TuretaAutoAim {
 
     private final Tureta tureta;
     private PinpointDrive drive;
-    private Servo led;
 
     private double targetX = 0.0;
     private double targetY = 0.0;
@@ -22,7 +19,9 @@ public class TuretaAutoAim {
     private static final double SERVO_POS_MIN = 0.15;
     private static final double SERVO_POS_MAX = 0.85;
     private static final double SERVO_CENTER = 0.50;
-    public static double GAIN = 1.217;
+    public static double LEFT_GAIN = 1.22;
+    public static double RIGHT_GAIN = 1.22;
+
 
     private static final double SERVO_RANGE_DEGREES = 170;
 
@@ -32,8 +31,6 @@ public class TuretaAutoAim {
     public TuretaAutoAim(HardwareMap hardwareMap, PinpointDrive drive) {
         this.tureta = new Tureta(hardwareMap);
         this.drive = drive;
-        led = hardwareMap.get(Servo.class, "led");
-        led.setPosition(0);
     }
 
     public void setTarget(double x, double y) {
@@ -54,11 +51,15 @@ public class TuretaAutoAim {
         return Math.max(SERVO_POS_MIN, Math.min(SERVO_POS_MAX, servoPos));
     }
 
-    private double applyGain(double angle) {
-        return angle * GAIN;
+    private double applyGain(double requiredTurretAngle) {
+        if (requiredTurretAngle < 0) {
+            return requiredTurretAngle * RIGHT_GAIN;
+        } else {
+            return requiredTurretAngle * LEFT_GAIN;
+        }
     }
 
-    public boolean aimToTarget(double toleranceDegrees) {
+    public boolean aimToTarget(double TOLERANCE) {
         double robotX = drive.pose.position.x;
         double robotY = drive.pose.position.y;
 
@@ -69,16 +70,17 @@ public class TuretaAutoAim {
             return false;
         }
 
-        double rawError = getHeadingError();
+        double destinationAngle = Math.toDegrees(Math.atan2(deltaY, deltaX));
+        double robotHeading = getRobotHeading();
+        double requiredTurretAngle = normalizeAngle(destinationAngle - robotHeading);
 
-        if (Math.abs(rawError) < toleranceDegrees) {
-            tureta.setPosition(angleToServoPosition(applyGain(rawError)));
-            led.setPosition(0);
+        requiredTurretAngle = applyGain(requiredTurretAngle);
+
+        if (Math.abs(getHeadingError()) < Math.toRadians(TOLERANCE)) {
             return true;
         }
 
-        double gainedAngle = applyGain(rawError);
-        double targetServoPos = angleToServoPosition(gainedAngle);
+        double targetServoPos = angleToServoPosition(requiredTurretAngle);
 
         if (Double.isNaN(targetServoPos) || Double.isInfinite(targetServoPos)) {
             return false;
@@ -87,19 +89,11 @@ public class TuretaAutoAim {
         if (!isServoPositionValid(targetServoPos)) {
             targetServoPos = Tureta.clamp(targetServoPos);
             tureta.setPosition(targetServoPos);
-            led.setPosition(1);
             return false;
         }
 
         tureta.setPosition(targetServoPos);
-
-        if (targetServoPos >= 0.84 || targetServoPos <= 0.16) {
-            led.setPosition(1);
-        } else {
-            led.setPosition(0);
-        }
-
-        return false;
+        return true;
     }
 
     public boolean isAimed(double toleranceDegrees) {
@@ -112,10 +106,6 @@ public class TuretaAutoAim {
 
         double deltaX = targetX - robotX;
         double deltaY = targetY - robotY;
-
-        if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) < 0.001) {
-            return 0.0;
-        }
 
         double destinationAngle = Math.toDegrees(Math.atan2(deltaY, deltaX));
         double robotHeading = getRobotHeading();
@@ -150,9 +140,5 @@ public class TuretaAutoAim {
 
     public Tureta getTureta() {
         return tureta;
-    }
-
-    public double getPos() {
-        return tureta.getPosition();
     }
 }

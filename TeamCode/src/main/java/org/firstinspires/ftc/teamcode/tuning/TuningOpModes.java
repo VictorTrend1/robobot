@@ -53,7 +53,7 @@ public final class TuningOpModes {
         DriveViewFactory dvf;
         if (DRIVE_CLASS.equals(PinpointDrive.class)) {
             dvf = hardwareMap -> {
-                PinpointDrive pd = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
+                PinpointDrive pd = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0) , true);
 
                 List<Encoder> leftEncs = new ArrayList<>(), rightEncs = new ArrayList<>();
                 List<Encoder> parEncs = new ArrayList<>(), perpEncs = new ArrayList<>();

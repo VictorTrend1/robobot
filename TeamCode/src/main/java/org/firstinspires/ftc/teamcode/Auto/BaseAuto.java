@@ -35,7 +35,7 @@ public abstract class BaseAuto extends LinearOpMode {
         tureta  = new Tureta(hardwareMap);
         intake  = new Intake(hardwareMap);
         sensors = new RampSensors(hardwareMap);
-        drive   = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0.0, 0.0), Math.toRadians(0)));
+        drive   = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0.0, 0.0), Math.toRadians(0)) , true);
         autoaim = new TuretaAutoAim(hardwareMap, drive);
         balls   = 0;
 

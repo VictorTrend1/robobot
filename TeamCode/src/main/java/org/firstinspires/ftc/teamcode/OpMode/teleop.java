@@ -165,7 +165,8 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("STATE", "INTAKE");
                     telemetry.addData("Balls", intake.getBallsIntaked());
                     telemetry.addData("Autoaim: ", autoaim);
-
+                    telemetry.addData("X:" ,thread2Class.xpos());
+                    telemetry.addData("y:" ,thread2Class.ypos());
                     telemetry.update();
                     break;
                 }
@@ -313,7 +314,7 @@ public class teleop extends LinearOpMode {
         }
 
 
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(PoseStorage.currentPose.position.x,PoseStorage.currentPose.position.y), PoseStorage.currentPose.heading));
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0.0,0.0), 0), false);
 
         public void setShouldAim(boolean aim) {
             this.shouldAim = aim;
@@ -332,7 +333,7 @@ public class teleop extends LinearOpMode {
             return drive.pose.position.y;
         }
         public void resetPos(){
-            drive.pinpoint.setPosition(new Pose2d(new Vector2d(-130,0), Math.toRadians(0)));
+            drive.pinpoint.setPosition(new Pose2d(new Vector2d(-130,0),Math.toRadians(0)));
             drive.updatePoseEstimate();
         }
         public double getDistance(){

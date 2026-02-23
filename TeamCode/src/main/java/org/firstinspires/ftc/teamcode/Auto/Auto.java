@@ -21,7 +21,7 @@ public class Auto extends BaseAuto {
     protected void onInit() {
 
         SHOOT_MIN_OK = 1600;
-        drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
+        drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0) , true);
     }
     @Override
     protected void onRun() {

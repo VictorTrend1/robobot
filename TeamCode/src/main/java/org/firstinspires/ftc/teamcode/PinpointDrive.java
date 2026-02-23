@@ -45,7 +45,7 @@ public class PinpointDrive extends MecanumDrive {
     public GoBildaPinpointDriverRR pinpoint;
     private Pose2d lastPinpointPose = pose;
 
-    public PinpointDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public PinpointDrive(HardwareMap hardwareMap, Pose2d pose , boolean resetPinpoint) {
         super(hardwareMap, pose);
         FlightRecorder.write("PINPOINT_PARAMS",PARAMS);
         pinpoint = hardwareMap.get(GoBildaPinpointDriverRR.class,PARAMS.pinpointDeviceName);
@@ -60,9 +60,14 @@ public class PinpointDrive extends MecanumDrive {
         pinpoint.setEncoderResolution(PARAMS.encoderResolution);
 
         pinpoint.setEncoderDirections(PARAMS.xDirection, PARAMS.yDirection);
+        if(!resetPinpoint){
+            pinpoint.update();
+            pose = pinpoint.getPositionRR();
 
-        //pinpoint.recalibrateIMU();
-        pinpoint.resetPosAndIMU();
+        }
+        else{
+            pinpoint.resetPosAndIMU();
+        }
         try {
             Thread.sleep(300);
         } catch (InterruptedException e) {

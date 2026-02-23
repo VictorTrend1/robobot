@@ -10,13 +10,13 @@ import java.util.EnumMap;
 
 public class Ruleta {
 
-    public static final double SLOT_C1 = 0.04;
-        public static final double SLOT_C2 = 0.265;
-    public static final double SLOT_C3 = 0.485;
+    public static final double SLOT_C1 = 0.016;
+    public static final double SLOT_C2 = 0.241;
+    public static final double SLOT_C3 = 0.461;
 
-    public static final double SLOT_S1 = 0.376;
-    public static final double SLOT_S2 = 0.6;
-    public static final double SLOT_S3 = 0.82;
+    public static final double SLOT_S1 = 0.352;
+    public static final double SLOT_S2 = 0.576;
+    public static final double SLOT_S3 = 0.796;
     public static final double SAFE = 0.52;
     private static double lastpos = 0;
 

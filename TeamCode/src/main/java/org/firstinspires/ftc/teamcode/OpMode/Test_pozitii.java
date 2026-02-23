@@ -15,7 +15,7 @@ public class Test_pozitii extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        PinpointDrive drive = new PinpointDrive(hardwareMap, PoseStorage.currentPose);
+        PinpointDrive drive = new PinpointDrive(hardwareMap, PoseStorage.currentPose , true);
 
         waitForStart();
 

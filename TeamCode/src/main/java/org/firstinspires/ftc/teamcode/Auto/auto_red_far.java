@@ -39,7 +39,7 @@ public class auto_red_far extends BaseAuto {
             plan = getAprilTagId(result);
         }
 
-        drive = new PinpointDrive(hardwareMap, new Pose2d(-130, 61, 0) );
+        drive = new PinpointDrive(hardwareMap, new Pose2d(-130, 61, 0) , true);
     }
 
     public double getDistance() {
@@ -111,16 +111,18 @@ public class auto_red_far extends BaseAuto {
 
                             }).start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-102, 20), Math.toRadians(-90), slow_vel, slow_acc)
+                        .strafeToLinearHeading(new Vector2d(-102, 20), Math.toRadians(-90))
+                        .build()
+        );
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.toDouble()))
                         .afterTime(0.1, () -> {
                             ruleta.goTo(Ruleta.Slot.S1);
                             intake.stop();
                         })
                         .splineToLinearHeading(new Pose2d(-120, 54, Math.toRadians(0)), Math.toRadians(90))
-
                         .build()
         );
-        ruleta.goTo(Ruleta.Slot.S1);
         tureta.setPosition(0.37);
         intake.start();
 
@@ -151,10 +153,13 @@ public class auto_red_far extends BaseAuto {
                                 sleep(100);
                             }).start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-78, 21), Math.toRadians(-90), slow_vel, slow_acc)
+                        .strafeToLinearHeading(new Vector2d(-78, 21), Math.toRadians(-90))
+                        .build()
+        );
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.toDouble()))
                         .afterTime(0.1, () -> {
                             ruleta.goTo(Ruleta.Slot.S1);
-                            shooter.spinUp();
                             intake.stop();
                         })
                         .splineToLinearHeading(new Pose2d(-120, 54, Math.toRadians(0)), Math.toRadians(90))

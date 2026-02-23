@@ -62,7 +62,7 @@ public class MT_Test extends LinearOpMode {
             this.hm = hm;
         }
 
-         PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)));
+         PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)),true);
 
 
          @Override

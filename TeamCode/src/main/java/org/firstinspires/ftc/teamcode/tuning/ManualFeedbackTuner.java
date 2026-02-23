@@ -16,7 +16,7 @@ public final class ManualFeedbackTuner extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         if (TuningOpModes.DRIVE_CLASS.equals(PinpointDrive.class)) {
-            PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
+            PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0) ,true);
 
             waitForStart();
 

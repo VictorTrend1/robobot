@@ -66,7 +66,7 @@ public class MecanumDrive {
 
         public double kS = 1.4222582066922502;  //1.30698302212208
             public double kV = 0.12984600736671162; // 0.13623741273424456
-        public double kA = 0.05;
+        public double kA = 0.85;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 210;
@@ -81,9 +81,9 @@ public class MecanumDrive {
         public double lateralGain = 9; // 10
         public double headingGain = 13; // shared with turn  // 10
 
-        public double axialVelGain = 0.0;
-        public double lateralVelGain = 0.0;
-        public double headingVelGain = 0.0; // shared with turn
+        public double axialVelGain = 0.4;
+        public double lateralVelGain = 0.6;
+        public double headingVelGain = 1.0; // shared with turn
     }
 
     public static Params PARAMS = new Params();
@@ -276,7 +276,7 @@ public class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= timeTrajectory.duration + 1 ) {
+            if (t >= timeTrajectory.duration ) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);

@@ -26,7 +26,7 @@ public class TrackTest extends LinearOpMode {
 
         PinpointDrive drive = new PinpointDrive(
                 hardwareMap,
-                new Pose2d(new Vector2d(START_X, START_Y), Math.toRadians(START_HEADING_DEG))
+                new Pose2d(new Vector2d(START_X, START_Y), Math.toRadians(START_HEADING_DEG)),true
         );
         Tureta tureta = new Tureta(hardwareMap);
 

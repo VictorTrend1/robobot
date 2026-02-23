@@ -23,7 +23,7 @@ public class PinpointOffsetTuner extends LinearOpMode {
         double yOffsetInch = -3.94;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0),true);
 
         waitForStart();
 

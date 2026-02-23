@@ -38,7 +38,7 @@ public class auto_blue_close extends BaseAuto {
 
 
         SHOOT_MIN_OK = 1350;
-        drive = new PinpointDrive(hardwareMap, new Pose2d(13, 13, 0));    }
+        drive = new PinpointDrive(hardwareMap, new Pose2d(13, 13, 0),true);    }
     @Override
     protected void onRun() {
         plan = Ruleta.Plan3.PPG;
