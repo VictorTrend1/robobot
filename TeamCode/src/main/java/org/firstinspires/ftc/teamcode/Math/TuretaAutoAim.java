@@ -19,8 +19,7 @@ public class TuretaAutoAim {
     private static final double SERVO_POS_MIN = 0.15;
     private static final double SERVO_POS_MAX = 0.85;
     private static final double SERVO_CENTER = 0.50;
-    public static double LEFT_GAIN = 1.22;
-    public static double RIGHT_GAIN = 1.22;
+    public static double GAIN = 1.27;
 
 
     private static final double SERVO_RANGE_DEGREES = 170;
@@ -52,11 +51,8 @@ public class TuretaAutoAim {
     }
 
     private double applyGain(double requiredTurretAngle) {
-        if (requiredTurretAngle < 0) {
-            return requiredTurretAngle * RIGHT_GAIN;
-        } else {
-            return requiredTurretAngle * LEFT_GAIN;
-        }
+            return requiredTurretAngle * GAIN;
+
     }
 
     public boolean aimToTarget(double TOLERANCE) {
@@ -96,6 +92,7 @@ public class TuretaAutoAim {
         return true;
     }
 
+
     public boolean isAimed(double toleranceDegrees) {
         return Math.abs(getHeadingError()) < toleranceDegrees;
     }
@@ -122,10 +119,7 @@ public class TuretaAutoAim {
     }
 
     private double getRobotHeading() {
-        double headingRad = drive.pose.heading.toDouble();
-        while (headingRad > Math.PI) headingRad -= 2 * Math.PI;
-        while (headingRad < -Math.PI) headingRad += 2 * Math.PI;
-        return Math.toDegrees(headingRad);
+        return Math.toDegrees(drive.pose.heading.toDouble());
     }
 
     private double normalizeAngle(double angle) {

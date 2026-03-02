@@ -20,9 +20,7 @@ public abstract class BaseAuto extends LinearOpMode {
     protected Intake intake;
     protected PinpointDrive drive;
     protected int SHOOT_MIN_OK;
-
     protected RampSensors sensors;
-
     Ruleta.Plan3 plan;
 
     protected int balls;
@@ -50,7 +48,7 @@ public abstract class BaseAuto extends LinearOpMode {
     protected void onInit() {
         ruleta.goTo(Ruleta.Slot.S1);
         tureta.goDefault();
-        SHOOT_MIN_OK = 1675;
+        SHOOT_MIN_OK = 1650;
     }
 
     protected abstract void onRun();
@@ -96,16 +94,15 @@ public abstract class BaseAuto extends LinearOpMode {
 
     protected final void shootOnPlan(Ruleta.Plan3 plan) {
         preparePreloadGreenInS1PurpleInS2S3(plan);
-        sleep(250);
-
         int shotsDone = 0;
+        sleep(50);
 
         while (opModeIsActive() && shotsDone < 3) {
             Ruleta.Slot slot = pickNextScoreSlot(ruleta);
             if (slot == null) break;
 
             ruleta.goTo(slot);
-            sleep(300);
+            sleep(200);
 
             while (opModeIsActive() && !shooter.atSpeedTo(SHOOT_MIN_OK)) {}
 
@@ -120,9 +117,9 @@ public abstract class BaseAuto extends LinearOpMode {
 
 
     protected final void kick() {
-        shooter.pushKicker();
+        shooter.setKicker(0.14);
         sleep(150);
-        shooter.retractKicker();
+        shooter.setKicker(0.32);
     }
 
     protected final Ruleta.Slot pickNextScoreSlot(Ruleta r) {

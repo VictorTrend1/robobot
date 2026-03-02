@@ -33,6 +33,7 @@ public class Intake {
 
     public boolean isReadyForScore() { return full; }
     public int getBallsIntaked() { return balls; }
+    public void Ballminus(){balls--;}
 
     public Ruleta.Slot onBallEntered(boolean isGreen) {
         if (full || ruleta == null) return null;

@@ -60,30 +60,33 @@ public class MecanumDrive {
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
+        public double TimpPlus = 0.0;
+
         public double inPerTick = 1;
         public double lateralInPerTick = 0.5516086645945706;
         public double trackWidthTicks = 11.495733487353801;
 
         public double kS = 1.4222582066922502;  //1.30698302212208
             public double kV = 0.12984600736671162; // 0.13623741273424456
-        public double kA = 0.85;
+        public double kA = 0.075;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 210;
-        public double minProfileAccel = -100;
-        public double maxProfileAccel = 190;
+        public double maxWheelVel = 110;
+        public double minProfileAccel = -70;
+        public double maxProfileAccel = 80;
 
-        public double maxAngVel = 6 * Math.PI; // shared with path
-        public double maxAngAccel = 6 * Math.PI;
+        public double maxAngVel = Math.PI; // shared with path
+        public double maxAngAccel = Math.PI;
+
 
         // path controller gains
-        public double axialGain = 5;
+        public double axialGain = 6;
         public double lateralGain = 9; // 10
         public double headingGain = 13; // shared with turn  // 10
 
-        public double axialVelGain = 0.4;
-        public double lateralVelGain = 0.6;
-        public double headingVelGain = 1.0; // shared with turn
+        public double axialVelGain = 0.6;
+        public double lateralVelGain = 0.3;
+        public double headingVelGain = 0.6; // shared with turn
     }
 
     public static Params PARAMS = new Params();
@@ -276,7 +279,7 @@ public class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= timeTrajectory.duration ) {
+            if (t >= timeTrajectory.duration + PARAMS.TimpPlus) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);

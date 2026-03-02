@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.OpMode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.systems.Ruleta;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 import org.firstinspires.ftc.teamcode.systems.TargetStorage;
 import org.firstinspires.ftc.teamcode.systems.Tureta;
-
+@Config
 @TeleOp(name = "teleop")
 public class teleop extends LinearOpMode {
 
@@ -31,6 +32,10 @@ public class teleop extends LinearOpMode {
 
     private volatile State currentState = State.INTAKE;
     private volatile boolean shouldAim = false;
+
+    public static long  sleep1 = 160;
+    public static long sleep2 = 145;
+    public static long sleep3 = 150;
 
     HardwareMap hm;
 
@@ -118,7 +123,7 @@ public class teleop extends LinearOpMode {
             if (left_bumper.rising(gamepad1.left_bumper)) {
                 currentCollectSlot = nextCollectSlot(currentCollectSlot);
                 ruleta.goTo(currentCollectSlot);
-                sleep(100);
+                sleep(200);
             }
 
             Edge right_bumper = new Edge();
@@ -129,6 +134,10 @@ public class teleop extends LinearOpMode {
             Edge dpad_left = new Edge();
             if (dpad_left.rising(gamepad1.dpad_left)) {
                 shooter.stopFlywheel();
+            }
+            if(gamepad1.dpad_left){
+                intake.Ballminus();
+                sleep(200);
             }
 
 
@@ -145,6 +154,7 @@ public class teleop extends LinearOpMode {
                         if (next != null) {
                             ruleta.goTo(next);
                         }
+                        sleep(100);
                     }
 
                     if (intake.isReadyForScore()) {
@@ -167,6 +177,7 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("Autoaim: ", autoaim);
                     telemetry.addData("X:" ,thread2Class.xpos());
                     telemetry.addData("y:" ,thread2Class.ypos());
+                    telemetry.addData("Distance: ", thread2Class.getDistance());
                     telemetry.update();
                     break;
                 }
@@ -203,15 +214,15 @@ public class teleop extends LinearOpMode {
                         intake.start();
                         for (int i = 0; i < 3 && currentScoreSlot != null; i++) {
                             shooter.pushKicker();
-                            sleep(350);
+                            sleep(sleep1);
                             shooter.retractKicker();
                             ruleta.popScoredBall(currentScoreSlot);
                             shotsDone++;
                             currentScoreSlot = pickNextScoreSlot(ruleta);
-                            sleep(150);
+                            sleep(sleep2);
                             if (currentScoreSlot != null) {
                                 ruleta.goTo(currentScoreSlot);
-                                sleep(250);
+                                sleep(sleep3);
                             }
                         }
 
@@ -333,7 +344,7 @@ public class teleop extends LinearOpMode {
             return drive.pose.position.y;
         }
         public void resetPos(){
-            drive.pinpoint.setPosition(new Pose2d(new Vector2d(-130,0),Math.toRadians(0)));
+            drive.pinpoint.setPosition(new Pose2d(new Vector2d(0,0),drive.pose.heading));
             drive.updatePoseEstimate();
         }
         public double getDistance(){
@@ -361,7 +372,7 @@ public class teleop extends LinearOpMode {
                 if(isRunning) {
 
                     drive.updatePoseEstimate();
-                    shooter.RPMPos(drive.pose.position.x);
+                    shooter.RPMPos(getDistance());
                     led.setPosition(0);
 
                     if (shouldAim) {

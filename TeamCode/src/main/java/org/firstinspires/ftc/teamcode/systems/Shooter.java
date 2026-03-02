@@ -19,9 +19,9 @@ public class Shooter {
 
     private  double TARGET_VEL = 1660;
     private  double MIN_VEL = 1600;
-    private double KICK_PUSH = 0.14;
-    private double KICK_RETRACT = 0.32;
-    private static final double POZ_X = -70.0;
+    private double KICK_PUSH = 0.17;
+    private double KICK_RETRACT = 0.297;
+    private static final double DISTANTA = 90.0;
 
 
     private static final PIDFCoefficients PIDF =
@@ -34,7 +34,7 @@ public class Shooter {
         flywheel2.setDirection(DcMotorEx.Direction.REVERSE);
         flywheel.setDirection(DcMotorEx.Direction.FORWARD);
         flywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, PIDF);
-        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheel2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         stopAll();
     }
     public void spinUpTo(double target_vel){flywheel.setVelocity(target_vel);
@@ -58,9 +58,10 @@ public class Shooter {
         stopFlywheel();
        retractKicker();
     }
+    public void setKicker(double pos){kicker.setPosition(pos);}
 
-    public void RPMPos(double currentX) {
-        if (currentX < POZ_X) {
+    public void RPMPos(double distance) {
+        if (distance > DISTANTA) {
             setRPMFar();
         } else {
             setRPMClose();
@@ -77,9 +78,9 @@ public class Shooter {
     }
 
     public void setRPMClose() {
-        if (TARGET_VEL != 1420) {
-            TARGET_VEL = 1420;
-            MIN_VEL = 1380;
+        if (TARGET_VEL != 1520) {
+            TARGET_VEL = 1520;
+            MIN_VEL = 1500;
             if (flywheel.getVelocity() > 0) {
                 spinUp();
             }
