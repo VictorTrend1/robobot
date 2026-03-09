@@ -31,7 +31,7 @@ public class LocalizationTest extends LinearOpMode {
         boolean blockage=false;
         ElapsedTime timer =new ElapsedTime(0);
         boolean extend=false;
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(0,0), Math.toRadians(0)),true);
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(new Vector2d(-130, -61), Math.toRadians(0)),true);
 
         waitForStart();
 

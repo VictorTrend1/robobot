@@ -38,9 +38,11 @@ public class auto_blue_close extends BaseAuto {
         limelight.start();
         super.onInit();
         MecanumDrive.PARAMS.TimpPlus = 0.0;
+        TargetStorage.pipeline = 3;
+        TargetStorage.targetX = -0.7;
+        TargetStorage.targetY = 12.3;
 
-
-        SHOOT_MIN_OK = 1385;
+        SHOOT_MIN_OK = 1410;
         drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0),true);    }
     @Override
     protected void onRun() {
@@ -48,18 +50,18 @@ public class auto_blue_close extends BaseAuto {
                 new TranslationalVelConstraint(20),
                 new AngularVelConstraint(Math.PI / 2)
         ));
-        AccelConstraint slow_acc = new ProfileAccelConstraint(-5, 10);
-        AccelConstraint slow_acc2 = new ProfileAccelConstraint(-5, 10);
+        AccelConstraint slow_acc = new ProfileAccelConstraint(-2, 7);
+        AccelConstraint slow_acc2 = new ProfileAccelConstraint(-2, 7);
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toDegrees(drive.pose.heading.toDouble())))
                         .afterTime(0.1, () -> {
-                            shooter.spinUpTo(1400);
+                            shooter.spinUpTo(1440);
                             ruleta.goTo(Ruleta.Slot.S1);
                             tureta.setPosition(0.15);
                             intake.start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-53, 12.3), Math.toRadians(27))
+                        .strafeToLinearHeading(new Vector2d(-53, 12.3), Math.toRadians(17))
                         .build()
         );
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -80,7 +82,7 @@ public class auto_blue_close extends BaseAuto {
         telemetry.update();
         timpRecunostinta.reset();
 
-        tureta.setPosition(0.38);
+        tureta.setPosition(0.395);
         sleep(100);
         shootOnPlan(plan);
         ruleta.goTo(Ruleta.Slot.C1);
@@ -108,8 +110,8 @@ public class auto_blue_close extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), drive.pose.heading.toDouble()))
                         .afterTime(0, () -> {
-                            shooter.spinUpTo(1415);
-                            tureta.setPosition(0.27);
+                            shooter.spinUpTo(1435);
+                            tureta.setPosition(0.245);
                         })
                         .strafeToLinearHeading(new Vector2d(-51, 10.3), Math.toRadians(45))
                         .build()
@@ -120,7 +122,7 @@ public class auto_blue_close extends BaseAuto {
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), Math.toDegrees(drive.pose.heading.toDouble())))
-                        .strafeToLinearHeading(new Vector2d(-57.2, 38.7), Math.toRadians(45))
+                        .strafeToLinearHeading(new Vector2d(-59.2, 36.7), Math.toRadians(45)) // +2
                         .afterTime(0, () -> {
                             new Thread(() -> {
                                 intake.start();
@@ -140,8 +142,8 @@ public class auto_blue_close extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), drive.pose.heading.toDouble()))
                         .afterTime(0.1, () -> {
-                            tureta.setPosition(0.25);
-                            shooter.spinUpTo(1415);
+                            tureta.setPosition(0.225 );
+                            shooter.spinUpTo(1435);
                         })
                         .strafeToLinearHeading(new Vector2d(-63.62, 14.0), Math.toRadians(45))
                         .build()
@@ -158,9 +160,7 @@ public class auto_blue_close extends BaseAuto {
         );
 
         PoseStorage.currentPose = drive.pose;
-        TargetStorage.targetX = -0.7;
-        TargetStorage.targetY = 12.3
-        ;
+
 
         sleep(30000);
     }

@@ -39,8 +39,11 @@ public class auto_red_close extends BaseAuto {
         super.onInit();
         MecanumDrive.PARAMS.TimpPlus = 0.0;
 
+        TargetStorage.pipeline = 2;
+        TargetStorage.targetX = -0.7;
+        TargetStorage.targetY = -12.3;
 
-        SHOOT_MIN_OK = 1470;
+        SHOOT_MIN_OK = 1415;
         drive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0), true);    }
     @Override
     protected void onRun() {
@@ -54,7 +57,7 @@ public class auto_red_close extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toDegrees(drive.pose.heading.toDouble())))
                         .afterTime(0.1, () -> {
-                            shooter.spinUpTo(1450);
+                            shooter.spinUpTo(1435);
                             ruleta.goTo(Ruleta.Slot.S1);
                             tureta.setPosition(0.85);
                             intake.start();
@@ -79,7 +82,7 @@ public class auto_red_close extends BaseAuto {
         telemetry.addData("plan: ", plan);
         telemetry.update();
         timpRecunostinta.reset();
-        tureta.setPosition(0.55);
+        tureta.setPosition(0.52);
         sleep(100);
         shootOnPlan(plan);
         ruleta.goTo(Ruleta.Slot.C1);
@@ -95,10 +98,10 @@ public class auto_red_close extends BaseAuto {
                                 sleep(100);
                                 while(!sensors.ballPresent()){}
                                 ruleta.goTo(Ruleta.Slot.C2);
-                                sleep(200);
+                                sleep(100);
                                 while(!sensors.ballPresent()){}
                                 ruleta.goTo(Ruleta.Slot.C3);
-                                sleep(200);
+                                sleep(100);
                             }).start();
                         })
                         .strafeToLinearHeading(new Vector2d(-30.76, -30.33), Math.toRadians(-45), slow_vel, slow_acc)
@@ -108,8 +111,8 @@ public class auto_red_close extends BaseAuto {
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), drive.pose.heading.toDouble()))
                         .afterTime(0, () -> {
-                            shooter.spinUpTo(1490);
-                            tureta.setPosition(0.8);
+                            shooter.spinUpTo(1435);
+                            tureta.setPosition(0.75);
                         })
                        // .strafeToLinearHeading(new Vector2d(-59, -4.24), Math.toRadians(-45))
                         .strafeToLinearHeading(new Vector2d(-51, -10.3), Math.toRadians(-45))
@@ -129,24 +132,24 @@ public class auto_red_close extends BaseAuto {
                                 sleep(100);
                                 while(!sensors.ballPresent()){}
                                 ruleta.goTo(Ruleta.Slot.C3);
-                                sleep(200);
+                                sleep(100);
                                 while(!sensors.ballPresent()){}
                                 ruleta.goTo(Ruleta.Slot.C2);
-                                sleep(200);
+                                sleep(100);
                             }).start();
                         })
-                        .strafeToLinearHeading(new Vector2d(-48.3, -48.9), Math.toRadians(-45), slow_vel, slow_acc2)
+                        .strafeToLinearHeading(new Vector2d(-46.3, -50.9), Math.toRadians(-45), slow_vel, slow_acc2)
                         .build()
         );
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(new Vector2d(drive.pose.position.x, drive.pose.position.y), drive.pose.heading.toDouble()))
                         .afterTime(0.1, () -> {
-                            tureta.setPosition(0.8);
-                            shooter.spinUpTo(1450);
+                            tureta.setPosition(0.75);
+                            shooter.spinUpTo(1435);
                         })
                         //.strafeToLinearHeading(new Vector2d(-56, -4.24), Math.toRadians(-45))
-                        .strafeToLinearHeading(new Vector2d(-63.62, -14.0), Math.toRadians(-45))
+                        .strafeToLinearHeading(new Vector2d(-60.62, -14.0), Math.toRadians(-45))
 
                         .build()
         );
@@ -162,8 +165,6 @@ public class auto_red_close extends BaseAuto {
         );
 
         PoseStorage.currentPose = drive.pose;
-        TargetStorage.targetX = -0.7;
-        TargetStorage.targetY = -12.3;
 
         sleep(30000);
     }

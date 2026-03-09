@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.Math;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.systems.Tureta;
@@ -19,7 +21,13 @@ public class TuretaAutoAim {
     private static final double SERVO_POS_MIN = 0.15;
     private static final double SERVO_POS_MAX = 0.85;
     private static final double SERVO_CENTER = 0.50;
-    public static double GAIN = 1.27;
+    public static double GAIN = 1;
+    public static double PINPOINT_TOLERANCE_DEG = 40.0;
+    public static double LIMELIGHT_GAIN = -1.1;
+    public static double LIMELIGHT_WEIGHT = 0.8;
+    private double limelightTx = 0.0;
+    private Limelight3A limelight;
+
 
 
     private static final double SERVO_RANGE_DEGREES = 170;
@@ -42,7 +50,17 @@ public class TuretaAutoAim {
             this.currentVelocity = velocity;
         }
     }
-
+    public void setLimelightTx(Limelight3A limelight) {
+        LLResult result = limelight.getLatestResult();
+        if (result != null && result.isValid()) {
+            limelightTx = result.getTx();
+        } else {
+            limelightTx = 0.0;
+        }
+    }
+    public double returnTx(){
+        return limelightTx;
+    }
     private double angleToServoPosition(double angleDegrees) {
         double servoRange = SERVO_POS_MAX - SERVO_POS_MIN;
         double normalizedAngle = angleDegrees / SERVO_RANGE_DEGREES;
@@ -51,7 +69,7 @@ public class TuretaAutoAim {
     }
 
     private double applyGain(double requiredTurretAngle) {
-            return requiredTurretAngle * GAIN;
+        return requiredTurretAngle * GAIN;
 
     }
 
@@ -69,10 +87,20 @@ public class TuretaAutoAim {
         double destinationAngle = Math.toDegrees(Math.atan2(deltaY, deltaX));
         double robotHeading = getRobotHeading();
         double requiredTurretAngle = normalizeAngle(destinationAngle - robotHeading);
+        double headingError = requiredTurretAngle;
 
-        requiredTurretAngle = applyGain(requiredTurretAngle);
+        if (Math.abs(headingError) > PINPOINT_TOLERANCE_DEG) {
+            requiredTurretAngle = applyGain(requiredTurretAngle);
+        }
+        else {
+            double limelightCorrection = limelightTx * LIMELIGHT_GAIN;
+            requiredTurretAngle = requiredTurretAngle * (1.0 - LIMELIGHT_WEIGHT)
+                    + (requiredTurretAngle + limelightCorrection) * LIMELIGHT_WEIGHT;
+        }
 
-        if (Math.abs(getHeadingError()) < Math.toRadians(TOLERANCE)) {
+
+        if (Math.abs(getHeadingError()) < TOLERANCE ){
+            tureta.setPosition(angleToServoPosition(requiredTurretAngle));
             return true;
         }
 
@@ -135,4 +163,6 @@ public class TuretaAutoAim {
     public Tureta getTureta() {
         return tureta;
     }
+
+
 }

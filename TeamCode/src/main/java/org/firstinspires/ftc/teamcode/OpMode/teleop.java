@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.OpMode;
 
+import static org.firstinspires.ftc.teamcode.systems.TargetStorage.pipeline;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -88,7 +92,7 @@ public class teleop extends LinearOpMode {
         intake.resetForIntake();
         ruleta.goTo(Ruleta.Slot.C1);
         while(opModeInInit()){
-            telemetry.addData("pipeline: ", TargetStorage.pipeline);
+            telemetry.addData("pipeline: ", pipeline);
             telemetry.addData("Target x: ", TargetStorage.targetX);
             telemetry.addData("Target y: ", TargetStorage.targetY);
             telemetry.addData("x: ", PoseStorage.currentPose.position.x);
@@ -109,6 +113,10 @@ public class teleop extends LinearOpMode {
             boolean dpadDown = gamepad1.dpad_down;
             if (dpadDownEdge.rising(dpadDown)) {
                 autoaim = !autoaim;
+            }
+            if(gamepad2.right_bumper){
+                thread2Class.increasePip();
+                sleep(250);
             }
 
 
@@ -132,9 +140,6 @@ public class teleop extends LinearOpMode {
             }
 
             Edge dpad_left = new Edge();
-            if (dpad_left.rising(gamepad1.dpad_left)) {
-                shooter.stopFlywheel();
-            }
             if(gamepad1.dpad_left){
                 intake.Ballminus();
                 sleep(200);
@@ -226,12 +231,14 @@ public class teleop extends LinearOpMode {
                             }
                         }
 
-                        sleep(400);
+                        sleep(200);
                         intake.stop();
                         resetToIntake(shooter, intake, ruleta, rtEdge, ltEdge, ballEdge, shootEdge);
                         shooter.stopAll();
+                        intake.resetForIntake();
                         currentState = State.INTAKE;
                         shotsDone = 0;
+
                     }
                     telemetry.addData("STATE", "SCORE");
                     telemetry.addData("Vel", shooter.getVelocity());
@@ -244,6 +251,7 @@ public class teleop extends LinearOpMode {
                     telemetry.addData("Distance: ", thread2Class.getDistance());
                     telemetry.addData("Locked", thread2Class.isLocked());
                     telemetry.addData("Autoaim: ", autoaim);
+                    telemetry.addData("tx: ", thread2Class.returnTx());
                     telemetry.update();
                     break;
                 }
@@ -316,6 +324,8 @@ public class teleop extends LinearOpMode {
         private double TargetX = TargetStorage.targetX;
         private double TargetY = TargetStorage.targetY;
         private Shooter shooter;
+        private int pip = 2;
+        private Limelight3A limelight;
 
 
         private Tureta tureta = new Tureta(hardwareMap);public drivetrainThread(Telemetry telemetry, HardwareMap hm, Shooter shooter) {
@@ -333,22 +343,34 @@ public class teleop extends LinearOpMode {
 
         public boolean isLocked() {
             if (autoAim == null) return false;
-            return autoAim.isAimed(0.5);
+            return autoAim.isAimed(10);
         }
         public double xpos(){
             drive.updatePoseEstimate();
             return drive.pose.position.x;
         }
-        public double ypos(){
+        public double ypos()                      {
             drive.updatePoseEstimate();
             return drive.pose.position.y;
+        }
+        public void increasePip(){
+            pip++;
+            if (pip > 3) {
+                pip = 2;
+            } else if (pip < 2) {
+                pip = 3;
+            }
         }
         public void resetPos(){
             drive.pinpoint.setPosition(new Pose2d(new Vector2d(0,0),drive.pose.heading));
             drive.updatePoseEstimate();
         }
         public double getDistance(){
+            if (autoAim == null) return 0.0;
             return autoAim.getDistance();
+        }
+        public double returnTx(){
+            return autoAim.returnTx();
         }
 
         public void turetaDefaut(){
@@ -359,6 +381,12 @@ public class teleop extends LinearOpMode {
         public void run() {
 
             led = hardwareMap.get(Servo.class, "led");
+            limelight = hardwareMap.get(Limelight3A.class, "limelight");
+            if(pipeline == 0){
+                pipeline = pip;
+            }
+            limelight.pipelineSwitch(pipeline);
+            limelight.start();
 
             tureta.goDefault();
             autoAim = new TuretaAutoAim(hm, drive);
@@ -372,11 +400,12 @@ public class teleop extends LinearOpMode {
                 if(isRunning) {
 
                     drive.updatePoseEstimate();
-                    shooter.RPMPos(getDistance());
+                   shooter.RPMPos(autoAim.getDistance());
+                    autoAim.setLimelightTx(limelight);
                     led.setPosition(0);
 
                     if (shouldAim) {
-                        boolean canAim = autoAim.aimToTarget(0.3);
+                        boolean canAim = autoAim.aimToTarget(10);
                         if (!canAim) {
                             tureta.goDefault();
                         }

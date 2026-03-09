@@ -17,15 +17,15 @@ public class Shooter {
     public final DcMotorEx flywheel2;
     private final Servo kicker;
 
-    private  double TARGET_VEL = 1660;
-    private  double MIN_VEL = 1600;
+    private  double TARGET_VEL = 1640;
+    private  double MIN_VEL = 1620;
     private double KICK_PUSH = 0.17;
     private double KICK_RETRACT = 0.297;
     private static final double DISTANTA = 90.0;
 
 
     private static final PIDFCoefficients PIDF =
-            new PIDFCoefficients(300, 0, 1, 12);
+            new PIDFCoefficients(450, 0, 1, 11);
 
     public Shooter(HardwareMap hw) {
         flywheel = hw.get(DcMotorEx.class, "shooter1");
@@ -68,9 +68,9 @@ public class Shooter {
         }
     }
     public void setRPMFar() {
-        if (TARGET_VEL != 1660) {
-            TARGET_VEL = 1660;
-            MIN_VEL = 1600;
+        if (TARGET_VEL != 1640) {
+            TARGET_VEL = 1640;
+            MIN_VEL = 1620;
             if (flywheel.getVelocity() > 0) {
                 spinUp();
             }
@@ -78,9 +78,9 @@ public class Shooter {
     }
 
     public void setRPMClose() {
-        if (TARGET_VEL != 1520) {
-            TARGET_VEL = 1520;
-            MIN_VEL = 1500;
+        if (TARGET_VEL != 1450) {
+            TARGET_VEL = 1450;
+            MIN_VEL = 1400;
             if (flywheel.getVelocity() > 0) {
                 spinUp();
             }

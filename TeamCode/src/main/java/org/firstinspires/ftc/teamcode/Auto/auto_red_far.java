@@ -36,6 +36,9 @@ public class auto_red_far extends BaseAuto {
         limelight.start();
         super.onInit();
         MecanumDrive.PARAMS.TimpPlus = 0.8;
+        TargetStorage.targetX = 0.0;
+        TargetStorage.targetY = 0.0;
+        TargetStorage.pipeline = 2;
 
         while (opModeInInit()) {
             LLResult result = limelight.getLatestResult();
@@ -194,9 +197,6 @@ public class auto_red_far extends BaseAuto {
         );
 
         PoseStorage.currentPose = drive.pose;
-        TargetStorage.targetX = 0.0;
-        TargetStorage.targetY = 0.0;
-        TargetStorage.pipeline = 2;
         shooter.stopFlywheel();
 
         sleep(30000);

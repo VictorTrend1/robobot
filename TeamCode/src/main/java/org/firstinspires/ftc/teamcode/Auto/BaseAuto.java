@@ -117,8 +117,8 @@ public abstract class BaseAuto extends LinearOpMode {
 
 
     protected final void kick() {
-        shooter.setKicker(0.14);
-        sleep(150);
+        shooter.setKicker(0.13);
+        sleep(200);
         shooter.setKicker(0.32);
     }
 
@@ -131,13 +131,4 @@ public abstract class BaseAuto extends LinearOpMode {
         return null;
     }
 
-    protected void aimAndWait(double milliseconds, double toleranceDegrees) {
-        long startTime = System.currentTimeMillis();
-        long duration = (long) milliseconds;
-
-        while (System.currentTimeMillis() - startTime < duration && opModeIsActive()) {
-            autoaim.aimToTarget(toleranceDegrees);
-            sleep(20);
-        }
-    }
 }

@@ -14,7 +14,7 @@ public class Ruleta {
     public static final double SLOT_C2 = 0.259;
     public static final double SLOT_C3 = 0.479;
 
-    public static final double SLOT_S1 = 0.37;
+    public static final double SLOT_S1 = 0.38;
     public static final double SLOT_S2 = 0.594;
     public static final double SLOT_S3 = 0.814;
     public static final double SAFE = 0.52;

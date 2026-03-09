@@ -11,12 +11,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 @TeleOp(name="test_senzori", group = "Teleop")
 public class test_senzori  extends LinearOpMode {
-    public RevColorSensorV3 senzorIntake1;
+    public Rev2mDistanceSensor senzorIntake1;
     public Rev2mDistanceSensor senzorIntake2;
 
     @Override
     public void runOpMode() throws InterruptedException{
-        senzorIntake1 = hardwareMap.get(RevColorSensorV3.class, "senzorIntake");
+        senzorIntake1 = hardwareMap.get(Rev2mDistanceSensor.class, "senzorIntake");
         senzorIntake2 = hardwareMap.get(Rev2mDistanceSensor.class, "senzorIntake2");
         waitForStart();
         while(opModeIsActive()){
